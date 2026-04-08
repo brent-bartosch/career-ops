@@ -1,0 +1,61 @@
+# Query templates: archetype keywords x ATS platforms
+# Each scan cycle builds SERP queries from this matrix
+
+platforms:
+  greenhouse:
+    site_filter: "site:boards.greenhouse.io"
+  lever:
+    site_filter: "site:jobs.lever.co"
+  ashby:
+    site_filter: "site:jobs.ashbyhq.com"
+  workday:
+    site_filter: "site:myworkdayjobs.com"
+  wellfound:
+    site_filter: "site:wellfound.com/jobs"
+  yc:
+    site_filter: "site:workatastartup.com"
+  indeed:
+    site_filter: "site:indeed.com/viewjob OR site:indeed.com/jobs"
+  linkedin:
+    site_filter: "site:linkedin.com/jobs"
+
+archetypes:
+  revops_gtm_leader:
+    label: "A — RevOps / GTM Ops Leader"
+    keywords:
+      - "revenue operations"
+      - "sales operations"
+      - "GTM operations"
+      - "business operations"
+      - "growth operations"
+      - "revenue operations manager"
+      - "head of revenue operations"
+      - "director revenue operations"
+      - "VP revenue operations"
+      - "director sales operations"
+      - "GTM strategy"
+
+  solutions_architect:
+    label: "B — Solutions Architect"
+    keywords:
+      - "solutions architect"
+      - "GTM systems architect"
+      - "sales engineer"
+      - "technical strategist"
+      - "integration architect"
+      - "solutions engineer"
+      - "pre-sales engineer"
+      - "technical solutions"
+
+  marketing_ops:
+    label: "C — Marketing Ops / Marketing Technologist"
+    keywords:
+      - "marketing operations"
+      - "marketing technologist"
+      - "demand generation"
+      - "growth engineer"
+      - "marketing systems"
+      - "marketing automation engineer"
+      - "martech"
+      - "marketing operations manager"
+      - "director marketing operations"
