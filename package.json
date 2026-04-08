@@ -14,7 +14,10 @@
     "update:check": "node update-system.mjs check",
     "update": "node update-system.mjs apply",
     "rollback": "node update-system.mjs rollback",
-    "liveness": "node check-liveness.mjs"
+    "liveness": "node check-liveness.mjs",
+    "test": "node --test scrapers/serp-scanner.test.js scoring/archetype-matcher.test.js scoring/intent-scorer.test.js scrapers/posting-fetcher.test.js",
+    "scan": "node scrapers/scan.js",
+    "scan:estimate": "node scrapers/scan.js --estimate"
   },
   "keywords": [
     "ai",
