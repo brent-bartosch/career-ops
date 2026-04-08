@@ -2,12 +2,16 @@
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { config as loadEnv } from 'dotenv';
 import { runScan, loadTemplates, buildQueries } from './serp-scanner.js';
 import { fetchPosting } from './posting-fetcher.js';
 import { matchArchetypes } from '../scoring/archetype-matcher.js';
 import { scoreIntent } from '../scoring/intent-scorer.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Load .env from project root
+loadEnv({ path: join(__dirname, '..', '.env') });
 const ROOT = join(__dirname, '..');
 const HOPPER_DIR = join(ROOT, 'data', 'hopper');
 const TEMPLATES_PATH = join(__dirname, 'query-templates.yml');

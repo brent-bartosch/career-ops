@@ -223,30 +223,38 @@ export function deduplicatePostings(postings) {
 }
 
 /**
- * Fetch a Google SERP page.
+ * Fetch Google SERP results via Serper API.
+ * Returns structured JSON — no HTML parsing needed.
  * @param {string} query
- * @returns {Promise<{ success: boolean, html?: string, error?: string }>}
+ * @returns {Promise<{ success: boolean, results?: Array<{ url: string, title: string, snippet: string }>, error?: string }>}
  */
 export async function fetchSerp(query) {
+  const apiKey = process.env.SERPER_API_KEY;
+  if (!apiKey) {
+    return { success: false, error: 'SERPER_API_KEY not set in environment' };
+  }
+
   try {
-    const resp = await axios.get('https://www.google.com/search', {
-      params: { q: query, num: 20, hl: 'en' },
-      headers: { 'User-Agent': USER_AGENT },
-      timeout: 15_000,
-    });
+    const resp = await axios.post(
+      'https://google.serper.dev/search',
+      { q: query, num: 20 },
+      {
+        headers: {
+          'X-API-KEY': apiKey,
+          'Content-Type': 'application/json',
+        },
+        timeout: 15_000,
+      },
+    );
 
-    const html = resp.data;
+    const organic = resp.data.organic || [];
+    const results = organic.map((item) => ({
+      url: item.link || '',
+      title: item.title || '',
+      snippet: item.snippet || '',
+    }));
 
-    // Check for Google blocking (captcha / unusual traffic)
-    if (
-      html.includes('unusual traffic') ||
-      html.includes('captcha') ||
-      html.includes('detected unusual traffic')
-    ) {
-      return { success: false, error: 'Google blocking detected (captcha/unusual traffic)' };
-    }
-
-    return { success: true, html };
+    return { success: true, results };
   } catch (err) {
     return { success: false, error: err.message };
   }
@@ -282,16 +290,14 @@ export async function runScan(templatesPath, options = {}) {
   const allPostings = [];
 
   for (const q of queries) {
-    const { success, html, error } = await fetchSerp(q.query);
+    const { success, results: serpResults, error } = await fetchSerp(q.query);
 
     if (!success) {
       console.error(`SERP fetch failed for "${q.query}": ${error}`);
       continue;
     }
 
-    const results = parseGoogleResults(html);
-
-    for (const result of results) {
+    for (const result of serpResults) {
       const company =
         extractCompanyFromUrl(result.url) ||
         extractCompanyFromTitle(result.title);
