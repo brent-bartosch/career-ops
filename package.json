@@ -17,7 +17,8 @@
     "liveness": "node check-liveness.mjs",
     "test": "node --test scrapers/serp-scanner.test.js scoring/archetype-matcher.test.js scoring/intent-scorer.test.js scrapers/posting-fetcher.test.js",
     "scan": "node scrapers/scan.js",
-    "scan:estimate": "node scrapers/scan.js --estimate"
+    "scan:estimate": "node scrapers/scan.js --estimate",
+    "push": "node scrapers/push-to-sheets.js"
   },
   "keywords": [
     "ai",
@@ -37,6 +38,7 @@
     "axios": "^1.15.0",
     "cheerio": "^1.2.0",
     "dotenv": "^17.4.1",
+    "googleapis": "^171.4.0",
     "js-yaml": "^4.1.1",
     "playwright": "^1.58.1"
   }

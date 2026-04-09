@@ -237,7 +237,7 @@ export async function fetchSerp(query) {
   try {
     const resp = await axios.post(
       'https://google.serper.dev/search',
-      { q: query, num: 20 },
+      { q: query, num: 20, tbs: 'qdr:m' },
       {
         headers: {
           'X-API-KEY': apiKey,
@@ -252,6 +252,7 @@ export async function fetchSerp(query) {
       url: item.link || '',
       title: item.title || '',
       snippet: item.snippet || '',
+      postedDate: item.date || null,
     }));
 
     return { success: true, results };
@@ -306,6 +307,7 @@ export async function runScan(templatesPath, options = {}) {
         title: result.title,
         url: result.url,
         snippet: result.snippet,
+        postedDate: result.postedDate,
         company,
         platform: q.platform,
         archetype: q.archetype,
