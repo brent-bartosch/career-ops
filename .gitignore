@@ -45,3 +45,7 @@ data/artifacts/
 
 # Environment
 .env
+
+# Service account credentials
+credentials/
+*.json.key

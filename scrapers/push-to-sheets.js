@@ -23,6 +23,7 @@ loadEnv({ path: join(ROOT, '.env') });
 
 const POSTINGS_FILE = join(ROOT, 'data', 'hopper', 'postings.json');
 const SHEET_CONFIG_FILE = join(ROOT, 'data', 'hopper', 'sheet-config.json');
+const SERVICE_ACCOUNT_KEY = join(ROOT, 'credentials', 'sheets-sa.json');
 
 // Columns we push (system-managed)
 const SYSTEM_HEADERS = [
@@ -43,13 +44,23 @@ const USER_HEADERS = [
 ];
 
 async function getAuthClient() {
+  if (!existsSync(SERVICE_ACCOUNT_KEY)) {
+    throw new Error(
+      `Service account key not found at ${SERVICE_ACCOUNT_KEY}. ` +
+      `Download from GCP console and save there.`
+    );
+  }
   const auth = new google.auth.GoogleAuth({
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    keyFile: SERVICE_ACCOUNT_KEY,
+    scopes: [
+      'https://www.googleapis.com/auth/spreadsheets',
+      'https://www.googleapis.com/auth/drive',
+    ],
   });
   return auth.getClient();
 }
 
-async function createSheet(sheets, title) {
+async function createSheet(sheets, drive, title, shareWithEmail) {
   const res = await sheets.spreadsheets.create({
     requestBody: {
       properties: { title },
@@ -61,7 +72,23 @@ async function createSheet(sheets, title) {
       }],
     },
   });
-  return res.data.spreadsheetId;
+  const spreadsheetId = res.data.spreadsheetId;
+
+  // Share with user as owner (transfers ownership)
+  if (shareWithEmail) {
+    await drive.permissions.create({
+      fileId: spreadsheetId,
+      sendNotificationEmail: false,
+      requestBody: {
+        type: 'user',
+        role: 'writer',
+        emailAddress: shareWithEmail,
+      },
+    });
+    console.log(`Shared with ${shareWithEmail}`);
+  }
+
+  return spreadsheetId;
 }
 
 function postingToRow(p) {
@@ -91,6 +118,8 @@ async function main() {
   // Auth
   const authClient = await getAuthClient();
   const sheets = google.sheets({ version: 'v4', auth: authClient });
+  const drive = google.drive({ version: 'v3', auth: authClient });
+  const userEmail = process.env.SHEETS_USER_EMAIL || 'brent.bartosch@gmail.com';
 
   // Get or create spreadsheet
   let spreadsheetId;
@@ -98,25 +127,32 @@ async function main() {
   if (sheetIdArg) {
     spreadsheetId = sheetIdArg.split('=')[1];
   } else if (existsSync(SHEET_CONFIG_FILE)) {
-    const config = JSON.parse(readFileSync(SHEET_CONFIG_FILE, 'utf-8'));
-    spreadsheetId = config.spreadsheetId;
+    const sheetConfig = JSON.parse(readFileSync(SHEET_CONFIG_FILE, 'utf-8'));
+    spreadsheetId = sheetConfig.spreadsheetId;
     console.log(`Using existing sheet: ${spreadsheetId}`);
   } else {
     // Create new sheet
     const title = `Career-Ops Hopper — ${new Date().toISOString().split('T')[0]}`;
-    spreadsheetId = await createSheet(sheets, title);
+    spreadsheetId = await createSheet(sheets, drive, title, userEmail);
     console.log(`Created new sheet: ${spreadsheetId}`);
 
     // Save config
     writeFileSync(SHEET_CONFIG_FILE, JSON.stringify({ spreadsheetId }, null, 2));
   }
 
+  // Get the first sheet tab name and ID (works whether it's "Sheet1", "Postings", or anything)
+  const meta = await sheets.spreadsheets.get({ spreadsheetId });
+  const firstSheet = meta.data.sheets[0];
+  const sheetName = firstSheet.properties.title;
+  const sheetTabId = firstSheet.properties.sheetId;
+  const range = `${sheetName}!A:J`;
+
   // Read existing user data (Status, Priority, Notes) keyed by URL
   const userData = {};
   try {
     const existing = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Postings!A:J',
+      range,
     });
     const rows = existing.data.values || [];
     if (rows.length > 1) {
@@ -159,12 +195,12 @@ async function main() {
   // Clear and write
   await sheets.spreadsheets.values.clear({
     spreadsheetId,
-    range: 'Postings!A:J',
+    range,
   });
 
   await sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: 'Postings!A1',
+    range: `${sheetName}!A1`,
     valueInputOption: 'USER_ENTERED',
     requestBody: {
       values: [allHeaders, ...dataRows],
@@ -179,7 +215,7 @@ async function main() {
         // Bold header
         {
           repeatCell: {
-            range: { sheetId: 0, startRowIndex: 0, endRowIndex: 1 },
+            range: { sheetId: sheetTabId, startRowIndex: 0, endRowIndex: 1 },
             cell: {
               userEnteredFormat: {
                 textFormat: { bold: true },
@@ -192,13 +228,13 @@ async function main() {
         // Auto-resize columns
         {
           autoResizeDimensions: {
-            dimensions: { sheetId: 0, dimension: 'COLUMNS', startIndex: 0, endIndex: 10 },
+            dimensions: { sheetId: sheetTabId, dimension: 'COLUMNS', startIndex: 0, endIndex: 10 },
           },
         },
         // Add data validation for Status column (dropdown)
         {
           setDataValidation: {
-            range: { sheetId: 0, startRowIndex: 1, startColumnIndex: 7, endColumnIndex: 8 },
+            range: { sheetId: sheetTabId, startRowIndex: 1, startColumnIndex: 7, endColumnIndex: 8 },
             rule: {
               condition: {
                 type: 'ONE_OF_LIST',
@@ -218,7 +254,7 @@ async function main() {
         // Add data validation for Priority column (dropdown)
         {
           setDataValidation: {
-            range: { sheetId: 0, startRowIndex: 1, startColumnIndex: 8, endColumnIndex: 9 },
+            range: { sheetId: sheetTabId, startRowIndex: 1, startColumnIndex: 8, endColumnIndex: 9 },
             rule: {
               condition: {
                 type: 'ONE_OF_LIST',
