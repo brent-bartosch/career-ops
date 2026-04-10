@@ -78,7 +78,7 @@ Design principle: every stage produces a file. The pipeline is inspectable, debu
 
 #### Stage 2: Analyze + Present Topics
 
-**Process:**
+**Process (Claude Code skill invocation — user runs a command, Claude analyzes conversationally):**
 1. Claude reads the parsed digest
 2. Scores topics by:
    - Recency and momentum
