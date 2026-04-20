@@ -7,9 +7,10 @@
  * so an interrupted run doesn't lose work.
  *
  * Usage:
- *   node scrapers/reclassify-hopper.js                  # classify all eligible
+ *   node scrapers/reclassify-hopper.js                  # classify unclassified
  *   node scrapers/reclassify-hopper.js --limit=50       # cap at 50 calls
  *   node scrapers/reclassify-hopper.js --min-intent=30  # override threshold
+ *   node scrapers/reclassify-hopper.js --backfill       # re-run classified postings missing newer fields
  *   node scrapers/reclassify-hopper.js --dry-run        # show what would run
  */
 
@@ -38,10 +39,15 @@ function parseArgs() {
     minIntent: get('--min-intent=') ? parseInt(get('--min-intent='), 10) : 20,
     minDescription: get('--min-desc=') ? parseInt(get('--min-desc='), 10) : 0,
     dryRun: args.includes('--dry-run'),
+    backfill: args.includes('--backfill'),
   };
 }
 
 function isEligible(posting, opts) {
+  // Backfill mode: re-run classified postings that are missing newer schema fields
+  if (opts.backfill && posting.roleFit && !posting.employmentType) {
+    return true;
+  }
   if (posting.roleFit) return false; // already classified
   if ((posting.intentScore || 0) < opts.minIntent) return false;
   const contentLen = (posting.description || '').length + (posting.snippet || '').length;
@@ -129,6 +135,8 @@ async function main() {
       if (result) {
         p.country = result.country;
         p.countryConfidence = result.countryConfidence;
+        p.employmentType = result.employmentType;
+        p.duration = result.duration;
         p.roleFit = result.roleFit;
         p.fitScore = result.fitScore;
         p.fitReason = result.fitReason;

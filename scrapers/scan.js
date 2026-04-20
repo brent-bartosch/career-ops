@@ -116,11 +116,13 @@ async function main() {
           if (result) {
             p.country = result.country;
             p.countryConfidence = result.countryConfidence;
+            p.employmentType = result.employmentType;
+            p.duration = result.duration;
             p.roleFit = result.roleFit;
             p.fitScore = result.fitScore;
             p.fitReason = result.fitReason;
             p.dealBreakers = result.dealBreakers;
-            console.log(`${label} — ${result.country}/${result.roleFit} (${result.fitScore})`);
+            console.log(`${label} — ${result.country}/${result.employmentType}/${result.roleFit} (${result.fitScore})`);
           } else {
             console.log(`${label} — unparseable`);
           }
