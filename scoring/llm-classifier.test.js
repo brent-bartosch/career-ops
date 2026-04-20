@@ -39,6 +39,8 @@ describe('parseClassifierResponse', () => {
     const raw = JSON.stringify({
       country: 'US',
       countryConfidence: 'high',
+      employmentType: 'full_time',
+      duration: 'ongoing',
       roleFit: 'good',
       fitScore: 75,
       fitReason: 'Matches solutions architect archetype.',
@@ -46,9 +48,34 @@ describe('parseClassifierResponse', () => {
     });
     const result = parseClassifierResponse(raw);
     assert.equal(result.country, 'US');
+    assert.equal(result.employmentType, 'full_time');
+    assert.equal(result.duration, 'ongoing');
     assert.equal(result.roleFit, 'good');
     assert.equal(result.fitScore, 75);
     assert.deepEqual(result.dealBreakers, []);
+  });
+
+  it('defaults employmentType and duration to "unknown" when missing', () => {
+    const raw = '{"country":"US","countryConfidence":"high","roleFit":"good","fitScore":80,"fitReason":"x","dealBreakers":[]}';
+    const result = parseClassifierResponse(raw);
+    assert.equal(result.employmentType, 'unknown');
+    assert.equal(result.duration, 'unknown');
+  });
+
+  it('parses a contract role response', () => {
+    const raw = JSON.stringify({
+      country: 'US',
+      countryConfidence: 'high',
+      employmentType: 'contract',
+      duration: '6 months',
+      roleFit: 'good',
+      fitScore: 80,
+      fitReason: '6-month W2 contract for GTM systems build.',
+      dealBreakers: [],
+    });
+    const result = parseClassifierResponse(raw);
+    assert.equal(result.employmentType, 'contract');
+    assert.equal(result.duration, '6 months');
   });
 
   it('extracts JSON from a response wrapped in markdown code fences', () => {

@@ -18,6 +18,17 @@ platforms:
     site_filter: "site:indeed.com/viewjob OR site:indeed.com/jobs"
   linkedin:
     site_filter: "site:linkedin.com/jobs"
+  # Contract / fractional platforms (curated marketplaces, not generic freelance)
+  braintrust:
+    site_filter: "site:app.usebraintrust.com OR site:usebraintrust.com"
+  ateam:
+    site_filter: "site:a.team"
+  contra:
+    site_filter: "site:contra.com"
+  pallet:
+    site_filter: "site:pallet.com"
+  catalant:
+    site_filter: "site:gocatalant.com OR site:catalant.com"
 
 archetypes:
   revops_gtm_leader:
@@ -59,3 +70,29 @@ archetypes:
       - "martech"
       - "marketing operations manager"
       - "director marketing operations"
+
+  # Contract / fractional variants — shared across archetypes
+  contract_fractional:
+    label: "D — Contract / Fractional"
+    keywords:
+      - "fractional revops"
+      - "fractional revenue operations"
+      - "fractional CRO"
+      - "fractional head of revenue"
+      - "fractional GTM"
+      - "fractional marketing operations"
+      - "fractional CMO"
+      - "fractional solutions architect"
+      - "contract revops"
+      - "contract revenue operations"
+      - "contract GTM"
+      - "contract marketing operations"
+      - "contract solutions architect"
+      - "interim head of revenue"
+      - "interim VP revenue"
+      - "interim head of marketing"
+      - "revops consultant"
+      - "GTM consultant"
+      - "marketing operations consultant"
+      - "solutions architect consultant"
+      - "integration consultant"

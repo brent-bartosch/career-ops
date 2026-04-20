@@ -15,7 +15,7 @@
     "update": "node update-system.mjs apply",
     "rollback": "node update-system.mjs rollback",
     "liveness": "node check-liveness.mjs",
-    "test": "node --test scrapers/serp-scanner.test.js scoring/archetype-matcher.test.js scoring/intent-scorer.test.js scrapers/posting-fetcher.test.js",
+    "test": "node --test scrapers/serp-scanner.test.js scoring/archetype-matcher.test.js scoring/intent-scorer.test.js scrapers/posting-fetcher.test.js scoring/parse-posted-date.test.js scoring/llm-classifier.test.js",
     "scan": "node scrapers/scan.js",
     "scan:estimate": "node scrapers/scan.js --estimate",
     "push": "node scrapers/push-to-sheets.js"

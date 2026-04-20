@@ -28,15 +28,17 @@ const SERVICE_ACCOUNT_KEY = join(ROOT, 'credentials', 'sheets-sa.json');
 
 // Columns we push (system-managed)
 const SYSTEM_HEADERS = [
-  'Posted Date',   // YYYY-MM-DD — sortable
-  'Posted',        // original relative string ("3 days ago")
-  'Fit Score',     // 0-100 from LLM classifier
-  'Role Fit',      // good / partial / poor
-  'Intent Score',  // keyword-based intent score
+  'Posted Date',      // YYYY-MM-DD — sortable
+  'Posted',           // original relative string ("3 days ago")
+  'Fit Score',        // 0-100 from LLM classifier
+  'Role Fit',         // good / partial / poor
+  'Employment Type',  // full_time / contract / fractional / contract_to_hire
+  'Duration',         // "6 months" / "ongoing" / etc.
+  'Intent Score',     // keyword-based intent score
   'Company',
   'Title',
-  'Country',       // US / UK / Remote / Unknown
-  'Location',      // raw location signal from JD
+  'Country',          // US / UK / Remote / Unknown
+  'Location',         // raw location signal from JD
   'Archetypes',
   'Platform',
   'Fit Reason',
@@ -109,6 +111,8 @@ function postingToRow(p) {
     p.postedDate || '',
     p.fitScore ?? '',
     p.roleFit || '',
+    p.employmentType || '',
+    p.duration || '',
     p.intentScore || 0,
     p.company || '',
     (p.title || '').substring(0, 120),

@@ -34,10 +34,14 @@ What Brent avoids (deal-breakers):
 - non_technical: role is pure strategy/advisory with no building
 - non_us: position is explicitly based outside the US (UK, EMEA, APAC, specific non-US city)
 
+Brent is open to BOTH full-time employment AND contract/fractional work. Do not penalize a role for being contract — classify it.
+
 Return ONLY valid JSON matching this exact schema, no markdown, no commentary:
 {
   "country": "US" | "UK" | "France" | "Germany" | "Ireland" | "Canada" | "Remote" | "Unknown",
   "countryConfidence": "high" | "medium" | "low",
+  "employmentType": "full_time" | "contract" | "fractional" | "contract_to_hire" | "unknown",
+  "duration": "string describing duration or 'unknown' or 'ongoing'",
   "roleFit": "good" | "partial" | "poor",
   "fitScore": 0-100 integer,
   "fitReason": "one concise sentence",
@@ -46,9 +50,16 @@ Return ONLY valid JSON matching this exact schema, no markdown, no commentary:
 
 Rules:
 - "country": where the role is based. If explicitly "Remote - US" or "US remote" → US. If "Remote" alone with no country → Remote. If UK/EMEA/Paris/Berlin/London etc → that country.
+- "employmentType":
+  - "full_time" = W2 full-time employee, salary + benefits
+  - "contract" = W2 or 1099 contract, defined end date, no benefits. Includes staff aug.
+  - "fractional" = part-time, typically "fractional CRO/CMO/CTO" or "head of X (fractional)". Ongoing but not full-time.
+  - "contract_to_hire" = starts as contract, converts to FT after evaluation period
+  - "unknown" = cannot determine from JD
+- "duration": quote the duration from the JD if stated ("6 months", "3-6 months", "12 months"). Use "ongoing" for fractional roles without end date. Use "unknown" if not specified.
 - "roleFit": "good" means matches an archetype cleanly with no deal-breakers. "partial" means related but with caveats. "poor" means wrong role or major deal-breakers.
 - "fitScore": 0-100 continuous scale. 70+ = good, 40-69 = partial, <40 = poor.
-- "dealBreakers": only include if they actually apply. Empty array if none.
+- "dealBreakers": only include if they actually apply. Empty array if none. For contract roles, "staff_aug" is NOT a deal-breaker unless the role is pure body-rental with no architectural ownership.
 - "fitReason": ≤ 20 words. Specific. Reference the concrete signal.`;
 
 /**
@@ -105,6 +116,8 @@ export function parseClassifierResponse(raw) {
   return {
     country: String(parsed.country || 'Unknown'),
     countryConfidence: String(parsed.countryConfidence || 'low'),
+    employmentType: String(parsed.employmentType || 'unknown'),
+    duration: String(parsed.duration || 'unknown'),
     roleFit: String(parsed.roleFit || 'poor'),
     fitScore: Number(parsed.fitScore) || 0,
     fitReason: String(parsed.fitReason || ''),
