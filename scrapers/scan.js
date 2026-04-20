@@ -7,6 +7,8 @@ import { runScan, loadTemplates, buildQueries } from './serp-scanner.js';
 import { fetchPosting } from './posting-fetcher.js';
 import { matchArchetypes } from '../scoring/archetype-matcher.js';
 import { scoreIntent } from '../scoring/intent-scorer.js';
+import { classifyPosting } from '../scoring/llm-classifier.js';
+import { parsePostedDate } from '../scoring/parse-posted-date.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -21,8 +23,10 @@ const POSTINGS_FILE = join(HOPPER_DIR, 'postings.json');
 const args = process.argv.slice(2);
 const estimateOnly = args.includes('--estimate');
 const skipFetch = args.includes('--skip-fetch');
+const skipClassify = args.includes('--skip-classify');
 const platformArg = args.find(a => a.startsWith('--platforms='));
 const platforms = platformArg ? platformArg.split('=')[1].split(',') : null;
+const CLASSIFY_MIN_INTENT = 20;
 
 async function main() {
   console.log('='.repeat(60));
@@ -85,13 +89,49 @@ async function main() {
     }
   }
 
-  // Score and classify all new postings
+  // Score and classify all new postings (keyword-based)
   console.log('\n--- Scoring ---\n');
   for (const posting of newPostings) {
     posting.archetypes = matchArchetypes(posting);
     const { score, factors } = scoreIntent(posting);
     posting.intentScore = score;
     posting.scoreFactors = factors;
+    // Parse posted date to ISO (sortable)
+    if (posting.postedDate) {
+      posting.postedDateISO = parsePostedDate(posting.postedDate);
+    }
+  }
+
+  // LLM classification for postings above intent threshold
+  const apiKey = process.env.OPEN_ROUTER_API_KEY || process.env.OPENROUTER_API_KEY;
+  if (!skipClassify && apiKey) {
+    const toClassify = newPostings.filter(p => (p.intentScore || 0) >= CLASSIFY_MIN_INTENT);
+    if (toClassify.length > 0) {
+      console.log(`\n--- LLM Classification (${toClassify.length} postings) ---\n`);
+      for (let i = 0; i < toClassify.length; i++) {
+        const p = toClassify[i];
+        const label = `[${i + 1}/${toClassify.length}] ${p.company || '?'} — ${(p.title || '').slice(0, 50)}`;
+        try {
+          const result = await classifyPosting(p, { apiKey });
+          if (result) {
+            p.country = result.country;
+            p.countryConfidence = result.countryConfidence;
+            p.roleFit = result.roleFit;
+            p.fitScore = result.fitScore;
+            p.fitReason = result.fitReason;
+            p.dealBreakers = result.dealBreakers;
+            console.log(`${label} — ${result.country}/${result.roleFit} (${result.fitScore})`);
+          } else {
+            console.log(`${label} — unparseable`);
+          }
+        } catch (err) {
+          console.warn(`${label} — ERROR: ${err.message}`);
+          if (err.message.includes('429')) await new Promise(r => setTimeout(r, 5000));
+        }
+      }
+    }
+  } else if (!skipClassify) {
+    console.log('\n(skipping LLM classification — OPEN_ROUTER_API_KEY not set)');
   }
 
   // Merge with existing (dedupe by URL)

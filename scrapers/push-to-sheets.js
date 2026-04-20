@@ -15,6 +15,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { google } from 'googleapis';
 import { config as loadEnv } from 'dotenv';
+import { parsePostedDate } from '../scoring/parse-posted-date.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -27,12 +28,19 @@ const SERVICE_ACCOUNT_KEY = join(ROOT, 'credentials', 'sheets-sa.json');
 
 // Columns we push (system-managed)
 const SYSTEM_HEADERS = [
-  'Intent Score',
+  'Posted Date',   // YYYY-MM-DD — sortable
+  'Posted',        // original relative string ("3 days ago")
+  'Fit Score',     // 0-100 from LLM classifier
+  'Role Fit',      // good / partial / poor
+  'Intent Score',  // keyword-based intent score
   'Company',
   'Title',
+  'Country',       // US / UK / Remote / Unknown
+  'Location',      // raw location signal from JD
   'Archetypes',
   'Platform',
-  'Posted',
+  'Fit Reason',
+  'Deal Breakers',
   'URL',
 ];
 
@@ -42,6 +50,9 @@ const USER_HEADERS = [
   'Priority',     // 1-5 or high/med/low
   'Notes',
 ];
+
+// Countries allowed to be pushed to the sheet (everything else filtered out)
+const ALLOWED_COUNTRIES = new Set(['US', 'Remote', 'Unknown']);
 
 async function getAuthClient() {
   if (!existsSync(SERVICE_ACCOUNT_KEY)) {
@@ -92,15 +103,37 @@ async function createSheet(sheets, drive, title, shareWithEmail) {
 }
 
 function postingToRow(p) {
+  const postedISO = p.postedDateISO || parsePostedDate(p.postedDate) || '';
   return [
+    postedISO,
+    p.postedDate || '',
+    p.fitScore ?? '',
+    p.roleFit || '',
     p.intentScore || 0,
     p.company || '',
     (p.title || '').substring(0, 120),
+    p.country || '',
+    p.location || '',
     (p.archetypes || []).join(' | ') || 'unclassified',
     p.platform || '',
-    p.postedDate || '',
+    p.fitReason || '',
+    (p.dealBreakers || []).join(', '),
     p.url || '',
   ];
+}
+
+/**
+ * Filter postings for the sheet.
+ * Keep: US, Remote (no country specified), Unknown (no classification yet).
+ * Drop: UK, France, Germany, Ireland, Canada, etc.
+ */
+function filterForSheet(postings) {
+  return postings.filter(p => {
+    // If classified, enforce allowed country list
+    if (p.country) return ALLOWED_COUNTRIES.has(p.country);
+    // If not yet classified, include (Unknown bucket)
+    return true;
+  });
 }
 
 async function main() {
@@ -112,8 +145,10 @@ async function main() {
     console.error('No postings found. Run npm run scan first.');
     process.exit(1);
   }
-  const postings = JSON.parse(readFileSync(POSTINGS_FILE, 'utf-8'));
-  console.log(`Loaded ${postings.length} postings from hopper`);
+  const allPostings = JSON.parse(readFileSync(POSTINGS_FILE, 'utf-8'));
+  const postings = filterForSheet(allPostings);
+  console.log(`Loaded ${allPostings.length} postings from hopper`);
+  console.log(`After country filter (US/Remote/Unknown): ${postings.length}`);
 
   // Auth
   const authClient = await getAuthClient();
@@ -145,7 +180,9 @@ async function main() {
   const firstSheet = meta.data.sheets[0];
   const sheetName = firstSheet.properties.title;
   const sheetTabId = firstSheet.properties.sheetId;
-  const range = `${sheetName}!A:J`;
+  const totalCols = SYSTEM_HEADERS.length + USER_HEADERS.length;
+  const lastColLetter = String.fromCharCode(65 + totalCols - 1); // A + n-1
+  const range = `${sheetName}!A:${lastColLetter}`;
 
   // Read existing user data (Status, Priority, Notes) keyed by URL
   const userData = {};
@@ -228,13 +265,18 @@ async function main() {
         // Auto-resize columns
         {
           autoResizeDimensions: {
-            dimensions: { sheetId: sheetTabId, dimension: 'COLUMNS', startIndex: 0, endIndex: 10 },
+            dimensions: { sheetId: sheetTabId, dimension: 'COLUMNS', startIndex: 0, endIndex: totalCols },
           },
         },
         // Add data validation for Status column (dropdown)
         {
           setDataValidation: {
-            range: { sheetId: sheetTabId, startRowIndex: 1, startColumnIndex: 7, endColumnIndex: 8 },
+            range: {
+              sheetId: sheetTabId,
+              startRowIndex: 1,
+              startColumnIndex: SYSTEM_HEADERS.length,
+              endColumnIndex: SYSTEM_HEADERS.length + 1,
+            },
             rule: {
               condition: {
                 type: 'ONE_OF_LIST',
@@ -254,7 +296,12 @@ async function main() {
         // Add data validation for Priority column (dropdown)
         {
           setDataValidation: {
-            range: { sheetId: sheetTabId, startRowIndex: 1, startColumnIndex: 8, endColumnIndex: 9 },
+            range: {
+              sheetId: sheetTabId,
+              startRowIndex: 1,
+              startColumnIndex: SYSTEM_HEADERS.length + 1,
+              endColumnIndex: SYSTEM_HEADERS.length + 2,
+            },
             rule: {
               condition: {
                 type: 'ONE_OF_LIST',
