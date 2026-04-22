@@ -49,3 +49,6 @@ data/artifacts/
 # Service account credentials
 credentials/
 *.json.key
+
+# Git worktrees (isolated feature branches)
+.worktrees/
