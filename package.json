@@ -16,7 +16,7 @@
     "rollback": "node update-system.mjs rollback",
     "liveness": "node check-liveness.mjs",
     "test": "node --test scrapers/serp-scanner.test.js scoring/archetype-matcher.test.js scoring/intent-scorer.test.js scrapers/posting-fetcher.test.js scoring/parse-posted-date.test.js scoring/llm-classifier.test.js outbound/validator.test.js outbound/voice-lint.test.js outbound/clients/apollo.test.js outbound/clients/bright-data.test.js outbound/clients/playwright-fetch.test.js outbound/jd-ingest.test.js outbound/company-research.test.js outbound/target-id.test.js outbound/enrichment.test.js outbound/proof-match.test.js outbound/draft.test.js outbound/artifact.test.js outbound/tracker.test.js outbound/schedule.test.js",
-    "test:outbound": "node --test outbound/",
+    "test:outbound": "node --test 'outbound/**/*.test.js'",
     "scan": "node scrapers/scan.js",
     "scan:estimate": "node scrapers/scan.js --estimate",
     "push": "node scrapers/push-to-sheets.js"
