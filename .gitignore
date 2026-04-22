@@ -50,5 +50,9 @@ data/artifacts/
 credentials/
 *.json.key
 
+# Outbound playbook artifacts (user layer — contains verified target emails)
+outreach/
+!outreach/.gitkeep
+
 # Git worktrees (isolated feature branches)
 .worktrees/
