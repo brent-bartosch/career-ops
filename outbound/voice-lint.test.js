@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { lintDraft, RULES } from './voice-lint.js';
 
 test('lintDraft: passes a clean draft', () => {
-  const body = 'Doug — your stack (HubSpot + Sybill + QuotaPath + Equals) says you bought in on AI-in-the-workflow. Wired that shape at a $30M SaaS: 8-stage pipeline engine, API-direct HubSpot, LLM-drafted rep activity feeding CRM without manual entry. Could we chat this week? Best, Brent';
+  const body = 'Doug — your stack (HubSpot + Sybill + QuotaPath + Equals) says you bought in on AI-in-the-workflow, not AI-in-the-margins. Wired that exact shape at a $30M B2B SaaS: API-direct HubSpot, 8-stage pipeline engine, ICP scoring across 7 cohorts, LLM-drafted rep activity feeding CRM without manual entry. HubSpot-native and engineering-first — same problem space the JD describes. Could we chat this week?\n\nBest, Brent';
   const result = lintDraft(body);
   assert.equal(result.pass, true, JSON.stringify(result));
 });

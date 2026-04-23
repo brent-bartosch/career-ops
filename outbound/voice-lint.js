@@ -43,7 +43,7 @@ export const RULES = [
   { id: 'no-emoji', label: 'No emoji' },
   { id: 'no-banned-phrases', label: 'No banned corp-speak' },
   { id: 'no-praise-opener', label: 'No generic praise opener' },
-  { id: 'word-count-40-80', label: 'Word count 40-80 (body only)' },
+  { id: 'word-count-60-80', label: 'Word count 60-80 (body only)' },
   { id: 'anchored-specificity', label: 'Must anchor to a number or a named tool' },
   { id: 'no-trailing-cta', label: 'No multi-paragraph trailing CTA' }
 ];
@@ -71,8 +71,8 @@ export function lintDraft(body) {
   }
 
   const wordCount = bodyWordCount(body);
-  if (wordCount < 40 || wordCount > 80) {
-    failures.push(`[word-count-40-80] word count ${wordCount} outside [40, 80]`);
+  if (wordCount < 60 || wordCount > 80) {
+    failures.push(`[word-count-60-80] word count ${wordCount} outside [60, 80]`);
   }
 
   const hasNumber = /\b\d/.test(body);
