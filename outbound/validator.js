@@ -39,7 +39,7 @@ export const STAGE_SCHEMAS = Object.freeze({
       email_status: (v) => ['verified', 'guessed', 'catch-all'].includes(v),
       linkedin_url: (v) => typeof v === 'string' && v.startsWith('http'),
       tenure_at_company_months: (v) => typeof v === 'number',
-      prior_roles: (v) => Array.isArray(v) && v.length >= 2,
+      prior_roles: (v) => Array.isArray(v) && v.length >= 1,
       recent_activity: (v) => Array.isArray(v) && v.length >= 3
     },
     warnings: {
@@ -54,11 +54,11 @@ export const STAGE_SCHEMAS = Object.freeze({
   'draft': {
     required: {
       drafts: (v) => Array.isArray(v) && v.length === 3 && v.every(d =>
-        typeof d.word_count === 'number' && d.word_count <= 80 && d.word_count >= 1
+        typeof d.word_count === 'number' && d.word_count <= 80 && d.word_count >= 60
       )
     },
     message: {
-      drafts: 'Each variant must be 1-80 words.'
+      drafts: 'Each variant must be 60-80 words.'
     }
   }
 });
