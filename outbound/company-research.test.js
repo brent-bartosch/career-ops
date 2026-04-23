@@ -63,3 +63,24 @@ test('researchCompany: hard-stops when no recent news', async () => {
   assert.equal(result.ok, false);
   assert.ok(result.errors.some(e => /news/i.test(e)));
 });
+
+test('researchCompany: undated news items are filtered out, not stamped with today', async () => {
+  const webFetcher = async () => 'x'.repeat(250);
+  const webSearcher = async (q) => {
+    if (/funding/i.test(q)) return [{ title: 'Series A', url: 'x', snippet: '', date: '2025-06-01' }];
+    if (/customer/i.test(q)) return [
+      { title: 'A', url: 'a', snippet: '', date: '2025-06-01' },
+      { title: 'B', url: 'b', snippet: '', date: '2025-06-01' },
+      { title: 'C', url: 'c', snippet: '', date: '2025-06-01' }
+    ];
+    if (/news/i.test(q)) return [
+      { title: 'Undated news item', url: 'https://x', snippet: '' /* no date */ },
+      { title: 'Also undated', url: 'https://y', snippet: '', date: undefined }
+    ];
+    return [];
+  };
+  const result = await researchCompany({ company: 'X', jd_raw_text: 'x', webFetcher, webSearcher });
+  // With zero dated news items, validator should hard-stop on news freshness
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some(e => /news/i.test(e)), `Expected news hard stop. Errors: ${JSON.stringify(result.errors)}`);
+});
