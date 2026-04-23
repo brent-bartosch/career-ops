@@ -90,3 +90,55 @@ test('enrichTarget: hard-stops when no email returned', async () => {
   assert.equal(result.ok, false);
   assert.ok(result.errors.some(e => /deliverable email/i.test(e)));
 });
+
+test('enrichTarget: hard-stops early when apollo_person_id missing', async () => {
+  const apollo = { matchPerson: async () => { throw new Error('should not be called'); } };
+  const brightData = { getProfile: async () => { throw new Error('should not be called'); }, getActivity: async () => { throw new Error('should not be called'); } };
+  const candidate = { name: 'X', title: 'Y', linkedin_url: 'https://li/x' }; // no apollo_person_id
+  const result = await enrichTarget({ candidate, apolloClient: apollo, brightDataClient: brightData });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some(e => /apollo_person_id/i.test(e)));
+});
+
+test('enrichTarget: no-email guard fires BEFORE Bright Data (no wasted API calls)', async () => {
+  let brightCalls = 0;
+  const apollo = {
+    matchPerson: async () => ({ email: null, email_status: 'unknown', linkedin_url: 'https://li/x', tenure_at_company_months: 5, prior_roles: [] })
+  };
+  const brightData = {
+    getProfile: async () => { brightCalls++; return {}; },
+    getActivity: async () => { brightCalls++; return []; }
+  };
+  const candidate = { name: 'X', title: 'Y', apollo_person_id: '1', linkedin_url: 'https://li/x' };
+  const result = await enrichTarget({ candidate, apolloClient: apollo, brightDataClient: brightData });
+  assert.equal(result.ok, false);
+  assert.equal(brightCalls, 0, 'Bright Data must not be called when email is missing');
+});
+
+test('enrichTarget: profile fetch failure surfaces profile-specific error', async () => {
+  const apollo = {
+    matchPerson: async () => ({ email: 'x@y.com', email_status: 'verified', linkedin_url: 'https://li/x', tenure_at_company_months: 5, prior_roles: [{}, {}] })
+  };
+  const brightData = {
+    getProfile: async () => { throw new Error('profile scrape 503'); },
+    getActivity: async () => [{}, {}, {}]
+  };
+  const candidate = { name: 'X', title: 'Y', apollo_person_id: '1', linkedin_url: 'https://li/x' };
+  const result = await enrichTarget({ candidate, apolloClient: apollo, brightDataClient: brightData });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some(e => /profile fetch failed.*503/i.test(e)));
+});
+
+test('enrichTarget: activity fetch failure surfaces activity-specific error', async () => {
+  const apollo = {
+    matchPerson: async () => ({ email: 'x@y.com', email_status: 'verified', linkedin_url: 'https://li/x', tenure_at_company_months: 5, prior_roles: [{}, {}] })
+  };
+  const brightData = {
+    getProfile: async () => ({ name: 'X', current_title: 'Y', about: '', experience: [] }),
+    getActivity: async () => { throw new Error('activity scrape timeout'); }
+  };
+  const candidate = { name: 'X', title: 'Y', apollo_person_id: '1', linkedin_url: 'https://li/x' };
+  const result = await enrichTarget({ candidate, apolloClient: apollo, brightDataClient: brightData });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some(e => /activity fetch failed.*timeout/i.test(e)));
+});
