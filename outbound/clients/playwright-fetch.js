@@ -9,14 +9,14 @@ import { chromium } from 'playwright';
 
 export async function fetchJDViaPlaywright(url, { launchBrowser = chromium.launch.bind(chromium), timeoutMs = 30000 } = {}) {
   const browser = await launchBrowser({ headless: true });
-  const ctx = await browser.newContext({
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-  });
-  const page = await ctx.newPage();
-
   try {
+    const ctx = await browser.newContext({
+      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    });
+    const page = await ctx.newPage();
+    page.setDefaultTimeout(timeoutMs); // applies to evaluate() too, not just goto()
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: timeoutMs });
-    // Heuristic: prefer <main>, <article>, or the largest text block.
+    // First matching selector in priority order — not "largest block"
     const innerText = await page.evaluate(() => {
       const candidates = [
         document.querySelector('main'),
@@ -35,7 +35,6 @@ export async function fetchJDViaPlaywright(url, { launchBrowser = chromium.launc
     }
     return innerText;
   } finally {
-    await ctx.close();
     await browser.close();
   }
 }
