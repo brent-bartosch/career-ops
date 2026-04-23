@@ -40,3 +40,11 @@ test('identifyTargets: surfaces Apollo auth error clearly', async () => {
   assert.equal(result.ok, false);
   assert.ok(result.errors.some(e => /APOLLO_API_KEY/i.test(e)));
 });
+
+test('inferTitleFilter: defaults to GTM for unrecognized JD title', () => {
+  const f = inferTitleFilter('Senior Data Engineer');
+  // Default branch returns same array as an explicit RevOps match
+  assert.deepStrictEqual(f, inferTitleFilter('VP RevOps'));
+  assert.ok(f.includes('VP RevOps'));
+  assert.ok(f.includes('Head of Growth'));
+});
