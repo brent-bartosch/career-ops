@@ -1,23 +1,23 @@
 import { validate } from './validator.js';
 
 export function parseJD(rawText, { fallbackCompany = '', fallbackTitle = '', fallbackLocation = '' } = {}) {
-  const lower = rawText.toLowerCase();
-
   const title = fallbackTitle ||
     (rawText.match(/(?:job title|position)[:\s]+([^\n]+)/i)?.[1] ||
-     rawText.split('\n').find(l => /engineer|manager|director|vp|head of|architect/i.test(l))?.trim() ||
+     rawText.split('\n')
+       .map(l => l.replace(/^[•\-\*]+\s*/, '').trim())
+       .find(l => l.length > 0 && /engineer|manager|director|vp|head of|architect/i.test(l)) ||
      'Unknown');
 
   const company_name = fallbackCompany ||
-    (rawText.match(/([A-Z][A-Za-z0-9]+(?:\s[A-Z][A-Za-z0-9]+)*) is (?:the|an?|seeking)/)?.[1] || 'Unknown');
+    (rawText.match(/([A-Z][A-Za-z0-9]+(?:\s[A-Z][A-Za-z0-9]+)*) is (?:the|an?|seeking)/)?.[1] ||
+     rawText.match(/(?:^|\n)\s*(?:At|About)\s+([A-Z][A-Za-z0-9]+(?:\s[A-Z][A-Za-z0-9]+)*)[\s,:]/)?.[1] ||
+     'Unknown');
 
   const location = fallbackLocation ||
     (rawText.match(/\b(?:based in|located in|office in)\s+([^\n.,]+)/i)?.[1] ||
-     rawText.match(/\b([A-Z][a-z]+,?\s*[A-Z]{2})\b/)?.[1] || 'Unknown');
+     rawText.match(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),\s*([A-Z]{2})\b/)?.[0] || 'Unknown');
 
-  const stack = extractBullets(rawText, /tooling|stack|tools/i);
-  const explicitStack = extractNamedTools(rawText);
-  const combinedStack = Array.from(new Set([...stack, ...explicitStack])).slice(0, 15);
+  const combinedStack = extractNamedTools(rawText).slice(0, 15);
 
   const required = extractSection(rawText, /required[:\s]/i, /preferred|qualifications|about|company|responsibilities/i);
   const preferred = extractSection(rawText, /preferred[:\s]/i, /qualifications|about|company|required|responsibilities/i);
@@ -50,12 +50,14 @@ export async function ingestJD({
   if (source === 'url') {
     try {
       rawText = await webFetcher(url);
-      if (!rawText || rawText.length < 500) throw new Error('web fetch empty');
-    } catch {
+      if (!rawText || rawText.length < 500) throw new Error('web fetch empty or thin');
+    } catch (webErr) {
+      console.warn(`JD ingest: web fetch failed for ${url} (${webErr.message}); trying Playwright...`);
       try {
         rawText = await playwrightFetcher(url);
-        if (!rawText || rawText.length < 500) throw new Error('playwright empty');
-      } catch {
+        if (!rawText || rawText.length < 500) throw new Error('playwright empty or thin');
+      } catch (pwErr) {
+        console.warn(`JD ingest: playwright fetch failed for ${url} (${pwErr.message})`);
         return { ok: false, errors: [`HARD STOP: Could not fetch JD from ${url}. Paste the JD text to continue.`] };
       }
     }
@@ -82,15 +84,8 @@ function extractSection(text, startRe, endRe) {
     .split(/\n/)
     .map(l => l.trim())
     .filter(l => /^[•\-\*•]|^\d+\.\s/.test(l))
-    .map(l => l.replace(/^[•\-\*•\d\.\s]+/, '').trim())
+    .map(l => l.replace(/^(?:[•\-\*]+\s*|\d+\.\s+)/, '').trim())
     .filter(Boolean);
-}
-
-function extractBullets(text, _hint) {
-  return text
-    .split(/\n/)
-    .filter(l => /^[•\-\*]/.test(l.trim()))
-    .map(l => l.replace(/^[•\-\*\s]+/, '').trim());
 }
 
 function extractNamedTools(text) {

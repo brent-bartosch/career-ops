@@ -84,3 +84,85 @@ test('ingestJD: URL — both fetchers fail → hard stop asking for paste', asyn
   assert.equal(jd.ok, false);
   assert.match(jd.errors[0], /paste the JD/i);
 });
+
+test('parseJD: stack contains only named tools, not responsibility bullets', () => {
+  const jd = `Company is the platform.
+Responsibilities:
+• Own the GTM Systems Architecture
+• Build pipeline automation
+Required:
+• 3+ years in Revenue Operations
+• Deep HubSpot experience
+`.repeat(3);
+  const p = parseJD(jd, { fallbackCompany: 'Company', fallbackTitle: 'Mgr', fallbackLocation: 'Austin, TX' });
+  // stack should include HubSpot (named tool) but NOT the bullet lines
+  assert.ok(p.stack.some(s => /HubSpot/i.test(s)), 'stack includes HubSpot');
+  assert.ok(!p.stack.some(s => /GTM Systems Architecture/i.test(s)), 'stack excludes responsibility bullets');
+  assert.ok(!p.stack.some(s => /years in Revenue Operations/i.test(s)), 'stack excludes requirement bullets');
+});
+
+test('parseJD: 3+ years requirement preserves the leading digit', () => {
+  const jd = `Company is the platform.
+Required:
+• 3+ years in Revenue Operations
+• 5+ years Salesforce admin
+`.repeat(3);
+  const p = parseJD(jd, { fallbackCompany: 'X', fallbackTitle: 'Y', fallbackLocation: 'Z' });
+  const hasIntactThreeYears = p.required.some(r => /^3\+ years/.test(r));
+  const hasIntactFiveYears = p.required.some(r => /^5\+ years/.test(r));
+  assert.ok(hasIntactThreeYears, `required should include "3+ years..." verbatim. Got: ${JSON.stringify(p.required)}`);
+  assert.ok(hasIntactFiveYears, `required should include "5+ years..." verbatim. Got: ${JSON.stringify(p.required)}`);
+});
+
+test('parseJD: title fallback strips bullet prefix from matched line', () => {
+  const jd = `At StartupX, we are hiring.
+
+• Senior GTM Engineer role
+• Remote-friendly
+
+Required:
+• 3+ years
+Preferred:
+• SQL
+Responsibilities:
+• Own the stack
+`.repeat(3);
+  const p = parseJD(jd, { fallbackLocation: 'Remote' });
+  // No fallbackTitle provided — triggers the second fallback path
+  assert.ok(!p.title.startsWith('•'), `title should not begin with bullet. Got: ${JSON.stringify(p.title)}`);
+  assert.match(p.title, /Senior GTM Engineer/i);
+});
+
+test('parseJD: company name picks up "At Company, we..." phrasing', () => {
+  const jd = `At Delightree, we are hiring a GTM Engineer.
+
+Required:
+• 3+ years
+Preferred:
+• SQL
+Responsibilities:
+• Own the stack
+`.repeat(3);
+  const p = parseJD(jd, { fallbackTitle: 'GTM Engineer', fallbackLocation: 'Remote' });
+  // No fallbackCompany — exercise the "At X, we..." regex
+  assert.equal(p.company_name, 'Delightree');
+});
+
+test('parseJD: location regex requires comma, avoids "Service SF" false positive', () => {
+  const jd = `Company is the platform. We do Customer Service SF work and also have US Remote positions.
+
+Required:
+• 3+ years
+Preferred:
+• SQL
+Responsibilities:
+• Own the stack
+`.repeat(3);
+  const p = parseJD(jd, { fallbackCompany: 'X', fallbackTitle: 'Y' });
+  // No fallbackLocation — test the regex
+  // Should NOT match "Service SF" or "US Remote" as locations
+  assert.notEqual(p.location, 'Service SF');
+  assert.notEqual(p.location, 'Customer Service SF');
+  // Should land on 'Unknown' since no proper "City, ST" or "based in X" exists
+  assert.equal(p.location, 'Unknown');
+});
