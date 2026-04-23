@@ -5,7 +5,7 @@
  * Missing or thin data returns { ok: false, errors: [...] } — never silently degrade.
  */
 
-export const STAGE_SCHEMAS = {
+export const STAGE_SCHEMAS = Object.freeze({
   'jd-ingest': {
     required: {
       raw_text: (v) => typeof v === 'string' && v.length >= 500,
@@ -53,17 +53,23 @@ export const STAGE_SCHEMAS = {
   },
   'draft': {
     required: {
-      drafts: (v) => Array.isArray(v) && v.length === 3 && v.every(d => d.word_count <= 80 && d.word_count >= 1)
+      drafts: (v) => Array.isArray(v) && v.length === 3 && v.every(d =>
+        typeof d.word_count === 'number' && d.word_count <= 80 && d.word_count >= 1
+      )
     },
     message: {
       drafts: 'Each variant must be 1-80 words.'
     }
   }
-};
+});
 
 export function validate(stage, data) {
   const schema = STAGE_SCHEMAS[stage];
   if (!schema) throw new Error(`unknown stage: ${stage}`);
+
+  if (data == null) {
+    return { ok: false, stage, errors: [`[${stage}] data is null or undefined`], warnings: [] };
+  }
 
   const errors = [];
   const warnings = [];

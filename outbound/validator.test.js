@@ -102,3 +102,31 @@ test('validate: stage 6 requires exactly 3 variants, each <=80 words', () => {
 test('validate: unknown stage throws', () => {
   assert.throws(() => validate('bogus', {}), /unknown stage/i);
 });
+
+test('validate: stage 2 rejects stale funding round (>36 months)', () => {
+  const oldDate = new Date(Date.now() - 37 * 30.44 * 86400000).toISOString().slice(0, 10);
+  const result = validate('company-research', {
+    product_description: 'x'.repeat(250),
+    icp: 'franchise ops',
+    funding_stage: 'Series A',
+    last_round: { date: oldDate, amount: '$5M' },
+    customers: ['A', 'B', 'C'],
+    news: [{ title: 'recent', date: new Date().toISOString().slice(0, 10), url: 'https://x', summary: 'x' }]
+  });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some(e => /last_round/i.test(e)));
+});
+
+test('validate: stage 2 rejects when all news items are >12 months old', () => {
+  const oldNewsDate = new Date(Date.now() - 13 * 30.44 * 86400000).toISOString().slice(0, 10);
+  const result = validate('company-research', {
+    product_description: 'x'.repeat(250),
+    icp: 'franchise ops',
+    funding_stage: 'Series A',
+    last_round: { date: new Date().toISOString().slice(0, 10), amount: '$5M' },
+    customers: ['A', 'B', 'C'],
+    news: [{ title: 'old', date: oldNewsDate, url: 'https://x', summary: 'x' }]
+  });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some(e => /news/i.test(e)));
+});
