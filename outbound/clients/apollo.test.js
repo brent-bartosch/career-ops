@@ -76,3 +76,49 @@ test('ApolloClient.matchPerson: returns email + enrichment', async () => {
   assert.equal(result.prior_roles.length, 2);
   assert.ok(result.tenure_at_company_months >= 0);
 });
+
+test('ApolloClient.matchPerson: null person throws clearly', async () => {
+  const fetchFn = mockFetch([{ status: 200, body: { person: null } }]);
+  const c = new ApolloClient({ apiKey: 'k', fetchFn });
+  await assert.rejects(
+    () => c.matchPerson({ personId: 'missing' }),
+    /no person found.*missing/i
+  );
+});
+
+test('ApolloClient.matchPerson: auth error surfaces clearly', async () => {
+  const fetchFn = mockFetch([{ status: 401, body: { error: 'Unauthorized' } }]);
+  const c = new ApolloClient({ apiKey: 'bad', fetchFn });
+  await assert.rejects(
+    () => c.matchPerson({ personId: '1' }),
+    /APOLLO_API_KEY/
+  );
+});
+
+test('ApolloClient: rate limit without retry-after header uses default 60', async () => {
+  const fetchFn = mockFetch([{ status: 429, headers: {}, body: {} }]);
+  const c = new ApolloClient({ apiKey: 'k', fetchFn });
+  await assert.rejects(
+    () => c.searchPeople({ company: 'x', titles: ['x'] }),
+    /rate limit.*60/i
+  );
+});
+
+test('ApolloClient.matchPerson: empty employment_history → zero tenure, empty prior_roles', async () => {
+  const fetchFn = mockFetch([{
+    status: 200,
+    body: {
+      person: {
+        id: '1',
+        email: 'x@y.com',
+        email_status: 'verified',
+        linkedin_url: 'https://li/x',
+        employment_history: []
+      }
+    }
+  }]);
+  const c = new ApolloClient({ apiKey: 'k', fetchFn });
+  const result = await c.matchPerson({ personId: '1' });
+  assert.equal(result.tenure_at_company_months, 0);
+  assert.deepEqual(result.prior_roles, []);
+});

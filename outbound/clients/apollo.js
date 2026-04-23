@@ -13,7 +13,6 @@ export class ApolloClient {
 
   async searchPeople({ company, titles, perPage = 10 }) {
     const res = await this._call('POST', '/api/v1/mixed_people/search', {
-      q_organization_domains: undefined,
       organization_names: [company],
       person_titles: titles,
       per_page: perPage
@@ -38,9 +37,15 @@ export class ApolloClient {
       reveal_phone_number: false
     });
 
-    const person = res.person || {};
+    const person = res.person;
+    if (!person) {
+      throw new Error(`Apollo matchPerson: no person found for id ${personId}`);
+    }
     const history = person.employment_history || [];
-    const current = history.find(h => !h.end_date) || history[0] || {};
+    const openEnded = history.filter(h => !h.end_date);
+    const current = openEnded.length > 0
+      ? openEnded.reduce((a, b) => (a.start_date > b.start_date ? a : b))
+      : (history[0] || {});
     const priors = history.filter(h => h !== current).slice(0, 2).map(h => ({
       company: h.organization_name,
       title: h.title,
@@ -72,11 +77,17 @@ export class ApolloClient {
       throw new Error('APOLLO_API_KEY missing or invalid');
     }
     if (res.status === 429) {
-      const retryAfter = res.headers.get?.('retry-after') || (res.headers.get ? res.headers.get('retry-after') : null) || '60';
+      const retryAfter = res.headers.get?.('retry-after') ?? '60';
       throw new Error(`Apollo rate limit hit. Retry after ${retryAfter}s.`);
     }
     if (!res.ok) {
-      const text = typeof res.json === 'function' ? JSON.stringify(await res.json()) : '(no body)';
+      let text = '(no body)';
+      try {
+        const body = typeof res.json === 'function' ? await res.json() : null;
+        if (body) text = JSON.stringify(body).slice(0, 200);
+      } catch {
+        /* body not JSON — keep default */
+      }
       throw new Error(`Apollo ${method} ${path} failed: ${res.status} — ${text}`);
     }
     return res.json();
