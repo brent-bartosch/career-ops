@@ -103,3 +103,32 @@ test('nextReportNumber: scans existing files and returns max+1, zero-padded', as
     assert.equal(next, '042');
   });
 });
+
+test('writeArtifact: throws on empty/missing company', async () => {
+  await withTmp(async (dir) => {
+    await assert.rejects(
+      writeArtifact({
+        outreachDir: dir, num: '001', date: '2026-04-22',
+        company: '', role: 'r', oferta_score: '4.0/5',
+        target: { name: 'x', title: 'y', email: 'e', email_status: 'verified', linkedin_url: 'u', tenure_at_company_months: 5 },
+        alternates: [], schedule: {}, company_dossier: {}, target_dossier: {}, proofs: [],
+        touch1: { variants: [], chosen_index: null, edits: '', sent_at: null }
+      }),
+      /company is required/i
+    );
+  });
+});
+
+test('writeArtifact: throws on missing target', async () => {
+  await withTmp(async (dir) => {
+    await assert.rejects(
+      writeArtifact({
+        outreachDir: dir, num: '001', date: '2026-04-22',
+        company: 'X', role: 'r', oferta_score: '4.0/5',
+        alternates: [], schedule: {}, company_dossier: {}, target_dossier: {}, proofs: [],
+        touch1: { variants: [], chosen_index: null, edits: '', sent_at: null }
+      }),
+      /target is required/i
+    );
+  });
+});

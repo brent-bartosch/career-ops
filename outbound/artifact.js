@@ -30,6 +30,11 @@ export async function writeArtifact(opts) {
     touch1
   } = opts;
 
+  if (!company) throw new Error('writeArtifact: opts.company is required');
+  if (!num || !date) throw new Error('writeArtifact: opts.num and opts.date are required');
+  if (!target || typeof target !== 'object') throw new Error('writeArtifact: opts.target is required');
+  if (!touch1 || typeof touch1 !== 'object') throw new Error('writeArtifact: opts.touch1 is required');
+
   await mkdir(outreachDir, { recursive: true });
 
   const status = touch1.sent_at ? 'Outreach Sent' : 'Outreach Drafted';
@@ -84,6 +89,24 @@ export async function readArtifact(path) {
   return { frontmatter, body: m[2] };
 }
 
+/**
+ * Append a follow-up touch section (Touch 2/3) to an existing artifact.
+ *
+ * Reads the file, concatenates the new section, writes back. NOT safe for
+ * concurrent writes to the same artifact — callers must serialize follow-up
+ * runs per artifact. MVP acceptable since each outreach is single-threaded
+ * through the orchestrator.
+ *
+ * @param {string} path - artifact file path
+ * @param {Object} touch
+ * @param {2|3} touch.touchNumber
+ * @param {string} touch.offsetLabel - "T+3" or "T+7"
+ * @param {string} [touch.new_signal]
+ * @param {Object[]} touch.variants
+ * @param {number|null} touch.chosen_index
+ * @param {string} [touch.edits]
+ * @param {string|null} touch.sent_at
+ */
 export async function appendTouch(path, touch) {
   const text = await readFile(path, 'utf8');
   const section = [
@@ -97,6 +120,13 @@ export async function appendTouch(path, touch) {
   await writeFile(path, text + section + '\n', 'utf8');
 }
 
+/**
+ * @param {Object} touch
+ * @param {Object[]} touch.variants - each { subject, body, word_count, anchor_type, anchor_source_url }
+ * @param {number|null} touch.chosen_index
+ * @param {string} [touch.edits]
+ * @param {string|null} touch.sent_at
+ */
 function renderTouch(touch) {
   const variants = (touch.variants || []).map((v, i) => {
     return `\n#### Variant ${String.fromCharCode(65 + i)}\n- **Subject:** ${v.subject}\n- **Anchor:** ${v.anchor_type} (${v.anchor_source_url || '—'})\n- **Words:** ${v.word_count}\n\n\`\`\`\n${v.body}\n\`\`\``;
