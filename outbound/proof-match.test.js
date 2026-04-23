@@ -77,3 +77,69 @@ test('matchProofs: hard-stops when < 2 matches', async () => {
   });
   assert.equal(result.ok, false);
 });
+
+test('matchProofs: skips H2 sections without "Best used to prove" line', async () => {
+  const mixedDigest = `
+# Article Digest
+
+## Voice Rules
+
+Practitioner authority, direct, specific. HubSpot and Salesforce are common tools.
+(no Best used to prove line)
+
+## Positioning one-liners
+
+I build HubSpot-native GTM infrastructure. Named tools: HubSpot, Salesforce.
+
+## Real Proof Entry
+
+**Context:** $30M B2B SaaS.
+**What I built:** 8-stage pipeline.
+**Stack:** Node, HubSpot API.
+**Best used to prove:** HubSpot as system of record, pipeline automation.
+
+## CRM Orchestration Layer
+
+**Context:** Multi-CRM integrations.
+**What I built:** Direct API to Close, Day.ai, Twenty, QuickBooks.
+**Metrics / scale:** $2M pipeline managed. 3-day Day.ai build.
+**Stack:** Node, Salesforce API.
+**Best used to prove:** API-direct CRM work, build in-house tooling, Salesforce integration.
+`;
+  const result = await matchProofs({
+    digestText: mixedDigest,
+    profileText: '',
+    jd: { required: ['HubSpot as system of record', 'Pipeline automation', 'GTM engineering'], responsibilities: ['Own HubSpot', 'Build pipeline'] }
+  });
+  // Should pick only real proof entries — Voice Rules and Positioning sections must be excluded
+  assert.equal(result.ok, true);
+  for (const p of result.data.proofs) {
+    assert.ok(
+      p.proof_text.includes('Real Proof Entry') || p.proof_text.includes('CRM Orchestration Layer'),
+      `proof must come from a real proof entry, got: ${p.proof_text}`
+    );
+    assert.ok(!p.proof_text.includes('Voice Rules'));
+    assert.ok(!p.proof_text.includes('Positioning'));
+  }
+});
+
+test('matchProofs: hard-stops when digest has no proof entries', async () => {
+  const noProofDigest = `
+# Digest
+
+## Voice Rules
+
+Just voice guidance here.
+
+## Something else
+
+No Best used to prove line anywhere.
+`;
+  const result = await matchProofs({
+    digestText: noProofDigest,
+    profileText: '',
+    jd: { required: ['x'], responsibilities: ['y'] }
+  });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some(e => /no proof entries/i.test(e)));
+});

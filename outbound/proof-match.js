@@ -1,5 +1,6 @@
 import { validate } from './validator.js';
 import { readFile } from 'fs/promises';
+import { NAMED_TOOLS } from './jd-ingest.js';
 
 export function splitDigestEntries(digestText) {
   const chunks = digestText.split(/\n##\s+/).slice(1);
@@ -25,7 +26,7 @@ export function scoreMatch(entry, bullet) {
     }
   }
   const hasNumber = /\b\d/.test(entry.body);
-  const hasNamedTool = /hubspot|salesforce|apollo|sybill|quotapath|equals|outreach|gong|clay/i.test(entry.body);
+  const hasNamedTool = NAMED_TOOLS.some(t => new RegExp(`\\b${t}\\b`, 'i').test(entry.body));
   if (hasNumber) score += 2;
   if (hasNamedTool) score += 3;
   for (const prove of entry.proves) {
@@ -35,22 +36,43 @@ export function scoreMatch(entry, bullet) {
   return score;
 }
 
+/**
+ * Stage 5: match JD bullets against article-digest proof entries.
+ *
+ * @param {Object} opts
+ * @param {string} opts.digestText - contents of article-digest.md
+ * @param {string} opts.profileText - contents of modes/_profile.md. Currently not
+ *   used in scoring; reserved for future archetype-weighting (see spec §13).
+ * @param {Object} opts.jd - parsed JD with required[] and responsibilities[]
+ * @param {string} [opts.digestPath] - source path for proof attribution
+ * @param {string} [opts.profilePath] - source path (unused today)
+ */
 export async function matchProofs({ digestText, profileText, jd, digestPath = 'article-digest.md', profilePath = 'modes/_profile.md' }) {
   if (!digestText || digestText.trim().length < 100) {
     return { ok: false, errors: ['HARD STOP: article-digest.md is empty or missing. Populate proof points before first outbound — outbound without proofs is noise.'] };
   }
 
   const entries = splitDigestEntries(digestText);
+  const proofEntries = entries.filter(e => e.proves.length > 0);
+
+  if (proofEntries.length === 0) {
+    return { ok: false, errors: ['HARD STOP: article-digest.md has no proof entries (entries must include "**Best used to prove:**" lines).'] };
+  }
+
   const bullets = [...(jd.required || []), ...(jd.responsibilities || [])];
 
   const proofs = [];
   const usedEntries = new Set();
   const unmatched = [];
 
+  // Threshold 3: requires either a named tool (+3), a number+token (+2+1),
+  // or ≥3 distinct content-token overlaps. Prevents matching on generic verbs.
+  const MIN_SCORE = 3;
+
   for (const bullet of bullets) {
-    const ranked = entries
+    const ranked = proofEntries
       .map(entry => ({ entry, score: scoreMatch(entry, bullet) }))
-      .filter(r => r.score >= 3 && !usedEntries.has(r.entry.title))
+      .filter(r => r.score >= MIN_SCORE && !usedEntries.has(r.entry.title))
       .sort((a, b) => b.score - a.score);
 
     if (ranked.length === 0) {

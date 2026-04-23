@@ -1,5 +1,7 @@
 import { validate } from './validator.js';
 
+export const NAMED_TOOLS = ['HubSpot', 'Salesforce', 'Apollo', 'Sybill', 'QuotaPath', 'Equals', 'Outreach', 'Gong', 'Clay', 'Segment', 'Snowflake', 'BigQuery', 'Metabase', 'Looker', 'Tableau', 'LinkedIn', 'Zapier', 'Make', 'Marketo', 'Pardot', 'Zoominfo', 'Clearbit', '6sense'];
+
 export function parseJD(rawText, { fallbackCompany = '', fallbackTitle = '', fallbackLocation = '' } = {}) {
   const title = fallbackTitle ||
     (rawText.match(/(?:job title|position)[:\s]+([^\n]+)/i)?.[1] ||
@@ -89,6 +91,5 @@ function extractSection(text, startRe, endRe) {
 }
 
 function extractNamedTools(text) {
-  const tools = ['HubSpot', 'Salesforce', 'Apollo', 'Sybill', 'QuotaPath', 'Equals', 'Outreach', 'Gong', 'Clay', 'Segment', 'Snowflake', 'BigQuery', 'Metabase', 'Looker', 'Tableau', 'LinkedIn', 'Zapier', 'Make', 'Marketo', 'Pardot', 'Zoominfo', 'Clearbit', '6sense'];
-  return tools.filter(t => new RegExp(`\\b${t}\\b`, 'i').test(text));
+  return NAMED_TOOLS.filter(t => new RegExp(`\\b${t}\\b`, 'i').test(text));
 }
