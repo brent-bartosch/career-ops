@@ -40,3 +40,29 @@ test('writeTrackerAddition: emits 9-column TSV with correct order', async () => 
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+test('writeTrackerAddition: sanitizes tabs and newlines from string fields', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'tracker-'));
+  try {
+    const path = await writeTrackerAddition({
+      additionsDir: dir,
+      num: '001', date: '2026-04-22',
+      company: 'Bad\tCompany',      // tab in company
+      role: 'Role\nwith newline',    // newline in role
+      status: 'Outreach Sent',
+      score: '4.0/5',
+      pdf: false,
+      reportLink: 'outreach/001-bad-company-2026-04-22.md',
+      note: 'Note with\ttab and\nnewline in it'
+    });
+    const content = await readFile(path, 'utf8');
+    const cols = content.trim().split('\t');
+    assert.equal(cols.length, 9, `Expected exactly 9 columns, got ${cols.length}: ${JSON.stringify(cols)}`);
+    assert.equal(cols[2], 'Bad Company');     // tab replaced with space
+    assert.equal(cols[3], 'Role with newline'); // newline replaced with space
+    assert.ok(!cols[8].includes('\t'));
+    assert.ok(!cols[8].includes('\n'));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});

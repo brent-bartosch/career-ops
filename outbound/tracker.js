@@ -14,13 +14,17 @@ export function buildNote({ target, touch, date }) {
   return `Outbound → ${target.name} (${target.title}). ${label} sent ${date}.`;
 }
 
+function sanitize(s) {
+  return String(s ?? '').replace(/\t/g, ' ').replace(/\n/g, ' ');
+}
+
 export async function writeTrackerAddition({
   additionsDir, num, date, company, role, status, score, pdf, reportLink, note
 }) {
   await mkdir(additionsDir, { recursive: true });
   const pdfCell = pdf ? '✅' : '❌';
   const reportCell = `[${num}](${reportLink})`;
-  const line = [num, date, company, role, status, score, pdfCell, reportCell, note].join('\t');
+  const line = [num, date, sanitize(company), sanitize(role), sanitize(status), score, pdfCell, reportCell, sanitize(note)].join('\t');
   const slug = (company || 'unknown').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const path = join(additionsDir, `${num}-${slug}.tsv`);
   await writeFile(path, line + '\n', 'utf8');
