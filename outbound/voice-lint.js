@@ -8,10 +8,10 @@ const EMOJI_RE = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/u;
 const BANNED_PHRASES = [
   'passionate about',
   'results-oriented',
-  'leveraged', 'leveraging', 'leverage our',
-  'spearheaded', 'spearhead',
+  'leverag',
+  'spearhead',
   'facilitated',
-  'synergies', 'synergy',
+  'synerg',
   'cutting-edge',
   'seamless',
   'robust',
@@ -35,7 +35,7 @@ const NAMED_TOOL_HINTS = [
   'hubspot', 'salesforce', 'apollo', 'sybill', 'quotapath', 'equals',
   'outreach', 'gong', 'clay', 'segment', 'snowflake', 'bigquery',
   'metabase', 'looker', 'tableau', 'linkedin', 'zapier', 'make',
-  'langchain', 'langraph', 'langgraph', 'anthropic', 'openai',
+  'langchain', 'langgraph', 'anthropic', 'openai',
   'openrouter', 'claude', 'gpt', 'llm', 'api'
 ];
 
@@ -81,7 +81,7 @@ export function lintDraft(body) {
     failures.push('[anchored-specificity] no number and no named tool — draft is too vague');
   }
 
-  const paragraphs = body.trim().split(/\n\s*\n/).filter(p => p.trim().length > 0);
+  const paragraphs = stripSignoff(body).trim().split(/\n\s*\n/).filter(p => p.trim().length > 0);
   if (paragraphs.length > 2) {
     failures.push(`[no-trailing-cta] ${paragraphs.length} paragraphs — ask should be the last line, no trailing content`);
   }
@@ -89,12 +89,15 @@ export function lintDraft(body) {
   return { pass: failures.length === 0, failures, wordCount };
 }
 
-function bodyWordCount(body) {
-  // Strip the signoff line ("Best, Brent" / "-Brent" / etc.) so lint measures the message, not the close.
-  const stripped = body
+function stripSignoff(body) {
+  return body
     .split(/\n/)
     .filter(line => !/^(best|cheers|thanks|regards|sincerely)[,.\s-]/i.test(line.trim()))
     .filter(line => !/^-\s*brent\b/i.test(line.trim()))
-    .join(' ');
-  return stripped.trim().split(/\s+/).filter(Boolean).length;
+    .join('\n');
+}
+
+function bodyWordCount(body) {
+  // Strip the signoff line ("Best, Brent" / "-Brent" / etc.) so lint measures the message, not the close.
+  return stripSignoff(body).trim().split(/\s+/).filter(Boolean).length;
 }

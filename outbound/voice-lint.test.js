@@ -20,7 +20,7 @@ test('lintDraft: rejects banned corp-speak', () => {
   const result = lintDraft(body);
   assert.equal(result.pass, false);
   assert.ok(result.failures.some(f => /passionate about/i.test(f)));
-  assert.ok(result.failures.some(f => /leveraged|leveraging/i.test(f)));
+  assert.ok(result.failures.some(f => /leverag/i.test(f)));
 });
 
 test('lintDraft: rejects generic praise openers', () => {
@@ -61,6 +61,20 @@ test('lintDraft: rejects multi-paragraph trailing CTA', () => {
   const result = lintDraft(body);
   assert.equal(result.pass, false);
   assert.ok(result.failures.some(f => /trailing/i.test(f)));
+});
+
+test('lintDraft: accepts 2 body paragraphs with signoff on own line', () => {
+  const body = 'Doug — your stack (HubSpot + Sybill + QuotaPath + Equals) says you bought in on AI-in-the-workflow, not AI-in-the-margins.\n\nWired that exact shape at a $30M B2B SaaS: API-direct HubSpot, 8-stage pipeline engine, ICP scoring, LLM-drafted rep activity. Could we chat this week?\n\nBest, Brent';
+  const result = lintDraft(body);
+  // Should NOT fail on trailing-cta — signoff doesn't count as a body paragraph
+  assert.equal(result.failures.some(f => /trailing/i.test(f)), false, JSON.stringify(result));
+});
+
+test('lintDraft: spearheaded triggers only one banned-phrase failure', () => {
+  const body = 'Doug — I spearheaded our GTM at HubSpot. ' + 'x '.repeat(55);
+  const result = lintDraft(body);
+  const spearFailures = result.failures.filter(f => /spearhead/i.test(f));
+  assert.equal(spearFailures.length, 1, JSON.stringify(result));
 });
 
 test('RULES exports a readable list', () => {
