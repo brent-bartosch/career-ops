@@ -19,6 +19,9 @@ Voice rules (non-negotiable):
 - Output JSON: { "subject": "...", "body": "..." }`;
 
 export function buildPrompts({ jd, company, target, proofs }) {
+  // If fewer than 3 proofs were returned by Stage 5, reuse the first for later variants.
+  // In practice this path is rare — validator requires proofs.length >= 2, and most JDs
+  // yield 3-5 matches. Still valid to ship with only 2.
   const p0 = proofs[0];
   const p1 = proofs[1] || p0;
   const p2 = proofs[2] || p0;
@@ -62,7 +65,8 @@ export async function generateDrafts({ jd, company, target, proofs, llmFn = defa
       let parsed;
       try {
         parsed = JSON.parse(stripFences(raw));
-      } catch {
+      } catch (parseErr) {
+        lintFailures = [`JSON parse error: ${parseErr.message}`];
         attempt++;
         continue;
       }
@@ -83,7 +87,7 @@ export async function generateDrafts({ jd, company, target, proofs, llmFn = defa
     if (!draft) {
       return {
         ok: false,
-        errors: [`HARD STOP: Draft variant ${String.fromCharCode(65 + i)} violated voice rule(s) after retry: ${lintFailures.join('; ')}. Review and edit manually.`]
+        errors: [`HARD STOP: Draft variant ${String.fromCharCode(65 + i)} failed after 2 attempts: ${lintFailures.join('; ')}. Review and edit manually.`]
       };
     }
     drafts.push(draft);
@@ -117,7 +121,17 @@ async function defaultLLM(prompt) {
       response_format: { type: 'json_object' }
     })
   });
-  if (!res.ok) throw new Error(`OpenRouter ${res.status}`);
+  if (res.status === 401 || res.status === 403) {
+    throw new Error('OPENROUTER_API_KEY missing or invalid');
+  }
+  if (!res.ok) {
+    let detail = '(no body)';
+    try {
+      const body = await res.json();
+      if (body) detail = JSON.stringify(body).slice(0, 200);
+    } catch { /* non-JSON body */ }
+    throw new Error(`OpenRouter ${res.status} — ${detail}`);
+  }
   const json = await res.json();
   return json.choices?.[0]?.message?.content || '';
 }

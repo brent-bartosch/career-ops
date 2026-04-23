@@ -58,3 +58,21 @@ test('generateDrafts: regenerates once on lint failure, hard-stops on second', a
   assert.equal(result.ok, false);
   assert.ok(result.errors.some(e => /voice rule|banned/i.test(e)));
 });
+
+test('generateDrafts: parse failure on both attempts surfaces JSON error in hard-stop', async () => {
+  // LLM returns non-JSON both times for variant A
+  let i = 0;
+  const garbageLLM = async () => {
+    i++;
+    return i <= 2 ? 'This is not JSON at all' : JSON.stringify({ subject: 's', body: 'filler' });
+  };
+  const result = await generateDrafts({
+    jd: { title: 't', company_name: 'D', required: ['HubSpot'], responsibilities: ['own stack'] },
+    company: { product_description: 'x'.repeat(200), customers: ['A', 'B', 'C'], news: [{ title: 'launched', date: '2026-03-01', url: 'u', summary: 's' }] },
+    target: { name: 'Doug', title: 'Head of Growth', recent_activity: [{ type: 'post', url: 'u', text_snippet: 'scaling', date: '2026-04-10' }] },
+    proofs: [{ jd_bullet: 'HubSpot', proof_text: 'Trial engine — 10,300 LOC', source_file: 'x', specificity_score: 5 }],
+    llmFn: garbageLLM
+  });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some(e => /JSON parse error/i.test(e)), `Expected JSON parse error in: ${JSON.stringify(result.errors)}`);
+});
