@@ -45,3 +45,26 @@ bun.lock
 .claude/memory/
 career-dashboard
 package-lock.json
+
+# Hopper data (local only)
+data/hopper/*.json
+data/hopper/*.tsv
+data/evaluations/*.json
+data/artifacts/
+
+# Environment
+.env
+
+# Service account credentials
+credentials/
+*.json.key
+
+# Outbound playbook artifacts (user layer — contains verified target emails)
+outreach/
+!outreach/.gitkeep
+
+# Git worktrees (isolated feature branches)
+.worktrees/
+
+# Local PDF exports (article-digest.md is source of truth)
+article-digest.pdf

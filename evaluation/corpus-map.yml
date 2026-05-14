@@ -1,0 +1,50 @@
+# corpus-map.yml
+# Live file references to Smoothed portfolio content.
+# Evaluation reads these files directly — always current.
+
+site_root: ../GTM_Services_Site
+
+systems:
+  - path: src/content/systems/trial-conversion-engine.mdx
+    tags: [trial-conversion, scoring, pipeline, ICP, behavioral-signals]
+  - path: src/content/systems/lead-intelligence-layer.mdx
+    tags: [enrichment, lead-scoring, firmographic, data-infrastructure]
+  - path: src/content/systems/outbound-intelligence-system.mdx
+    tags: [outbound, sequencing, personalization]
+  - path: src/content/systems/content-engine.mdx
+    tags: [content, automation, generation]
+  - path: src/content/systems/crm-orchestration-layer.mdx
+    tags: [crm, salesforce, hubspot, integration]
+  - path: src/content/systems/pipeline-conversion-engine.mdx
+    tags: [pipeline, conversion, funnel]
+  - path: src/content/systems/spend-attribution-engine.mdx
+    tags: [attribution, marketing-spend, analytics]
+
+case_studies:
+  - path: src/content/case-studies/mid-market-saas-trial-conversion.mdx
+    tags: [trial-conversion, SaaS, ICP-scoring, pre-mortem, speculative-build]
+  - path: src/content/case-studies/compliance-platform-content-engine.mdx
+    tags: [content-engine, compliance, automation]
+
+worldview:
+  - path: src/content/pages/worldview.mdx
+    tags: [API-direct, architectural-philosophy, positioning, MCP]
+
+problems:
+  - path: src/content/problems/free-trial-conversion.mdx
+    tags: [trial-conversion, PLG, product-led-growth]
+  - path: src/content/problems/lead-volume-and-quality.mdx
+    tags: [lead-gen, enrichment, quality]
+  - path: src/content/problems/crm-automation.mdx
+    tags: [crm, automation, integration]
+  - path: src/content/problems/content-engine.mdx
+    tags: [content, generation, distribution]
+  - path: src/content/problems/marketing-spend-efficiency.mdx
+    tags: [attribution, spend, efficiency]
+  - path: src/content/problems/outbound-at-scale.mdx
+    tags: [outbound, sequencing, scale]
+
+external_projects:
+  - path: ../../UpKeep/upkeep-trial-engine/
+    tags: [trial-conversion, pipeline, scoring-calibration, 10300-loc]
+    description: "Full trial conversion pipeline — 8 stages, 7 ICP cohorts, ~10,300 LOC"

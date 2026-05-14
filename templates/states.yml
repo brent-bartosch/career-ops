@@ -54,3 +54,27 @@ states:
     aliases: [no_aplicar, no aplicar, skip, monitor]
     description: Doesn't fit, don't apply
     dashboard_group: skip
+
+  - id: outreach_drafted
+    label: Outreach Drafted
+    aliases: [outreach-drafted, outbound_drafted]
+    description: Outbound draft exists, not yet sent
+    dashboard_group: applied
+
+  - id: outreach_sent
+    label: Outreach Sent
+    aliases: [outreach-sent, outbound_sent]
+    description: Touch 1 (T0) sent, awaiting response
+    dashboard_group: applied
+
+  - id: outreach_followup
+    label: Outreach Follow-up
+    aliases: [outreach-followup, outbound_followup]
+    description: Touch 2 or 3 sent, awaiting response
+    dashboard_group: applied
+
+  - id: outreach_response
+    label: Outreach Response
+    aliases: [outreach-response, outbound_response]
+    description: Target replied (terminal for outbound mode)
+    dashboard_group: responded
