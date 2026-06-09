@@ -8,7 +8,7 @@ import { buildInputs, chunk, normalizeRecord } from './linkedin-source.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SAMPLE = JSON.parse(
-  readFileSync(join(__dirname, '..', 'Linkedin Jobs', 'keyword_output_linkedin_jobs.JSON'), 'utf-8')
+  readFileSync(join(__dirname, 'fixtures', 'linkedin-jobs-sample.json'), 'utf-8')
 )[0];
 
 const CONFIG = {

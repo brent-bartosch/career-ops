@@ -10,7 +10,7 @@
  * Row shape: { snapshot_id, trigger_time, inputs_summary, status, rows_captured, error }
  */
 
-const TERMINAL = new Set(['fetched']);
+const TERMINAL = new Set(['fetched', 'failed']);
 
 /**
  * Reconcile every non-terminal ledger row.
@@ -65,8 +65,10 @@ export async function adoptOrphans({ store, client, triggerTime }) {
     return; // backstop is best-effort; never block the run
   }
   const known = new Set((await store.read()).map(r => r.snapshot_id));
+  const DEAD = new Set(['failed', 'expired', 'canceled', 'cancelled']);
   for (const s of snaps) {
     if (known.has(s.id)) continue;
+    if (DEAD.has(s.status)) continue; // don't resurrect dead snapshots
     await store.append({
       snapshot_id: s.id,
       trigger_time: triggerTime,

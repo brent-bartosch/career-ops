@@ -101,19 +101,21 @@ export async function ensureTab(sheets, spreadsheetId, title, headers) {
   }
 }
 
-/** Read the set of existing Job IDs from the main tab. */
+/** Read the set of existing Job IDs from the main tab. Fails loud rather than
+ *  silently returning empty (which would re-append the whole sheet as new). */
 export async function readExistingJobIds(sheets, spreadsheetId) {
   const ids = new Set();
-  try {
-    const res = await sheets.spreadsheets.values.get({ spreadsheetId, range: `${MAIN_TAB}!A:${colLetter(MAIN_HEADERS.length)}` });
-    const rows = res.data.values || [];
-    if (rows.length < 2) return ids;
-    const idIdx = rows[0].indexOf('Job ID');
-    for (let i = 1; i < rows.length; i++) {
-      const v = rows[i][idIdx];
-      if (v) ids.add(String(v));
-    }
-  } catch { /* tab empty/missing */ }
+  const res = await sheets.spreadsheets.values.get({ spreadsheetId, range: `${MAIN_TAB}!A:${colLetter(MAIN_HEADERS.length)}` });
+  const rows = res.data.values || [];
+  if (rows.length < 2) return ids; // header-only or empty tab
+  const idIdx = rows[0].indexOf('Job ID');
+  if (idIdx === -1) {
+    throw new Error(`"${MAIN_TAB}" tab is missing the "Job ID" header — refusing to run (would duplicate every row)`);
+  }
+  for (let i = 1; i < rows.length; i++) {
+    const v = rows[i][idIdx];
+    if (v) ids.add(String(v));
+  }
   return ids;
 }
 
