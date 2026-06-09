@@ -1,0 +1,39 @@
+# scrapers/linkedin-queries.yml
+# Bright Data LinkedIn Jobs discovery config for the daily GTM scan.
+# The input matrix = (discovery_archetypes' keywords) × locations.
+dataset_id: gd_lpfll7v5hcqtkxl6l
+chunk_size: 5
+defaults:
+  country: US
+  time_range: "Past 24 hours"   # daily cadence
+  experience_level: ""           # do not over-filter; rely on scoring
+locations:
+  - { label: la_hybrid,          location: "Los Angeles",   remote: "Hybrid",  job_type: "Full-time" }
+  - { label: la_onsite,          location: "Los Angeles",   remote: "On-site", job_type: "Full-time" }
+  - { label: remote_us_ft,       location: "United States", remote: "Remote",  job_type: "Full-time" }
+  - { label: remote_us_contract, location: "United States", remote: "Remote",  job_type: "Contract" }
+  - { label: la_contract,        location: "Los Angeles",   remote: "",        job_type: "Contract" }
+# Only these archetypes are *discovered* (cost control). Classification still
+# tags ALL archetypes in scoring/archetype-matcher.js.
+discovery_archetypes: [gtm_engineer, head_of_gtm]
+archetypes:
+  gtm_engineer:
+    keywords:
+      - "GTM engineer"
+      - "go-to-market engineer"
+      - "growth engineer"
+      - "marketing engineer"
+      - "automation engineer"
+      - "revenue operations engineer"
+      - "GTM systems"
+      - "GTM automation"
+      - "forward deployed engineer"
+  head_of_gtm:
+    keywords:
+      - "head of GTM"
+      - "head of go-to-market"
+      - "VP GTM"
+      - "founding GTM"
+      - "head of growth"
+      - "head of revenue"
+      - "GTM lead"
