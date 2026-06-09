@@ -1,7 +1,7 @@
 // scrapers/linkedin-sheets.test.js
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { MAIN_HEADERS, postingToRow, sheetImage, sheetHyperlink, dedupeNew } from './linkedin-sheets.js';
+import { MAIN_HEADERS, postingToRow, sheetImage, sheetHyperlink, dedupeNew, dedupeByRole } from './linkedin-sheets.js';
 
 test('sheetImage / sheetHyperlink: build formulas and escape quotes', () => {
   assert.equal(sheetImage('http://x/y.png'), '=IMAGE("http://x/y.png")');
@@ -38,4 +38,14 @@ test('dedupeNew: drops postings whose jobId already exists in the sheet', () => 
   const postings = [{ jobId: '123' }, { jobId: '456' }, { jobId: '456' }];
   const fresh = dedupeNew(postings, existingIds);
   assert.deepEqual(fresh.map(p => p.jobId), ['456']); // existing + intra-batch dup removed
+});
+
+test('dedupeByRole: collapses same company+title (case/space-insensitive), keeps first', () => {
+  const postings = [
+    { jobId: '1', company: 'HackerOne', title: 'Senior GTM Operations Engineer' },
+    { jobId: '2', company: 'hackerone', title: '  senior gtm operations engineer ' },
+    { jobId: '3', company: 'Nextdoor', title: 'GTM Engineer' },
+  ];
+  const out = dedupeByRole(postings);
+  assert.deepEqual(out.map(p => p.jobId), ['1', '3']);
 });

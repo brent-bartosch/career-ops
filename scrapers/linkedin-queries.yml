@@ -3,6 +3,9 @@
 # The input matrix = (discovery_archetypes' keywords) × locations.
 dataset_id: gd_lpfll7v5hcqtkxl6l
 chunk_size: 5
+# Relevance gate: only append postings that match >=1 archetype (kills the
+# fuzzy-keyword noise LinkedIn returns). Set false to append everything.
+require_archetype_match: true
 defaults:
   country: US
   time_range: "Past 24 hours"   # daily cadence

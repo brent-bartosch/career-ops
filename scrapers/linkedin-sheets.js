@@ -81,6 +81,25 @@ export function dedupeNew(postings, existingIds) {
   return fresh;
 }
 
+/** Normalized company+title key for collapsing duplicate role listings. */
+function roleKey(p) {
+  return `${(p.company || '').trim().toLowerCase()}||${(p.title || '').trim().toLowerCase()}`;
+}
+
+/** Collapse postings that are the same role (same company+title), keeping the first.
+ *  LinkedIn often has several distinct posting IDs for one job. */
+export function dedupeByRole(postings) {
+  const seen = new Set();
+  const out = [];
+  for (const p of postings) {
+    const k = roleKey(p);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(p);
+  }
+  return out;
+}
+
 // --- Sheets I/O (injected googleapis `sheets` client) ---
 
 /** Ensure a tab exists with the given headers; create + header it if missing. */
