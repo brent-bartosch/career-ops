@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test';
+import { describe, it, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { matchArchetypes } from './archetype-matcher.js';
 
@@ -67,4 +67,22 @@ describe('matchArchetypes', () => {
     });
     assert.ok(!result.includes('revops_gtm_leader'));
   });
+});
+
+test('matchArchetypes: tags gtm_engineer on a GTM engineer title', () => {
+  const matched = matchArchetypes({ title: 'GTM Engineer', snippet: 'build outbound automation in Clay' });
+  assert.ok(matched.includes('gtm_engineer'));
+});
+
+test('matchArchetypes: tags head_of_gtm on a Head of GTM title', () => {
+  const matched = matchArchetypes({ title: 'Head of GTM', snippet: 'own go-to-market strategy and pipeline' });
+  assert.ok(matched.includes('head_of_gtm'));
+});
+
+test('matchArchetypes: gtm_engineer via responsibility keywords without exact title', () => {
+  const matched = matchArchetypes({
+    title: 'Growth Systems Lead',
+    snippet: 'build the gtm stack with api integration and workflow automation',
+  });
+  assert.ok(matched.includes('gtm_engineer'));
 });
