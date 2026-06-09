@@ -43,8 +43,8 @@ const CLASSIFY_MIN_INTENT = 20;
 async function main() {
   // 1. Config + secrets
   const config = yaml.load(readFileSync(join(__dirname, 'linkedin-queries.yml'), 'utf-8'));
-  const apiKey = process.env.BRIGHT_DATA_API_KEY;
-  if (!apiKey) throw new Error('BRIGHT_DATA_API_KEY is required');
+  const apiKey = process.env.BRIGHT_DATA_API_KEY || process.env.BRIGHTDATA_API_KEY;
+  if (!apiKey) throw new Error('BRIGHT_DATA_API_KEY (or BRIGHTDATA_API_KEY) is required');
   const spreadsheetId = process.env.LINKEDIN_SHEET_ID;
   if (!spreadsheetId) throw new Error('LINKEDIN_SHEET_ID is required');
   const openRouterKey = process.env.OPEN_ROUTER_API_KEY || process.env.OPENROUTER_API_KEY;
