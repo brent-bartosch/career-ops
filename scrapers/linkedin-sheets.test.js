@@ -1,7 +1,7 @@
 // scrapers/linkedin-sheets.test.js
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { MAIN_HEADERS, postingToRow, sheetImage, sheetHyperlink, dedupeNew, dedupeByRole } from './linkedin-sheets.js';
+import { MAIN_HEADERS, postingToRow, sheetImage, sheetHyperlink, dedupeNew, dedupeByRole, roleKey } from './linkedin-sheets.js';
 
 test('sheetImage / sheetHyperlink: build formulas and escape quotes', () => {
   assert.equal(sheetImage('http://x/y.png'), '=IMAGE("http://x/y.png")');
@@ -48,4 +48,14 @@ test('dedupeByRole: collapses same company+title (case/space-insensitive), keeps
   ];
   const out = dedupeByRole(postings);
   assert.deepEqual(out.map(p => p.jobId), ['1', '3']);
+});
+
+test('dedupeByRole: drops roles already present in the sheet (cross-snapshot)', () => {
+  const existingKeys = [roleKey({ company: 'HackerOne', title: 'Senior GTM Operations Engineer' })];
+  const postings = [
+    { jobId: '9', company: 'HackerOne', title: 'Senior GTM Operations Engineer' }, // already in sheet
+    { jobId: '10', company: 'Pogo', title: 'GTM Engineer' },                        // new
+  ];
+  const out = dedupeByRole(postings, existingKeys);
+  assert.deepEqual(out.map(p => p.jobId), ['10']);
 });

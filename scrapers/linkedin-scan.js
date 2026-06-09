@@ -24,7 +24,7 @@ import { buildInputs, toApiInput, chunk, normalizeRecord } from './linkedin-sour
 import { reconcile, adoptOrphans } from './snapshot-ledger.js';
 import {
   MAIN_TAB, RUNS_TAB, MAIN_HEADERS, RUNS_HEADERS,
-  ensureTab, readExistingJobIds, appendPostings, makeLedgerStore, dedupeNew, dedupeByRole,
+  ensureTab, readExistingJobIds, readExistingRoleKeys, appendPostings, makeLedgerStore, dedupeNew, dedupeByRole,
 } from './linkedin-sheets.js';
 import { matchArchetypes } from '../scoring/archetype-matcher.js';
 import { scoreIntent } from '../scoring/intent-scorer.js';
@@ -63,6 +63,7 @@ async function main() {
   let totalAppended = 0;
   const onRecords = async (records, snapshotId) => {
     const existingIds = await readExistingJobIds(sheets, spreadsheetId);
+    const existingRoleKeys = await readExistingRoleKeys(sheets, spreadsheetId);
     const postings = [];
     for (const r of records) {
       const p = normalizeRecord(r, { snapshotId });
@@ -78,7 +79,7 @@ async function main() {
     const gated = config.require_archetype_match === false
       ? deduped
       : deduped.filter(p => (p.archetypes || []).length > 0);
-    const fresh = dedupeByRole(gated);
+    const fresh = dedupeByRole(gated, existingRoleKeys);
     const droppedNoise = deduped.length - gated.length;
     const droppedRepeat = gated.length - fresh.length;
 

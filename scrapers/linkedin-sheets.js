@@ -82,14 +82,16 @@ export function dedupeNew(postings, existingIds) {
 }
 
 /** Normalized company+title key for collapsing duplicate role listings. */
-function roleKey(p) {
+export function roleKey(p) {
   return `${(p.company || '').trim().toLowerCase()}||${(p.title || '').trim().toLowerCase()}`;
 }
 
 /** Collapse postings that are the same role (same company+title), keeping the first.
- *  LinkedIn often has several distinct posting IDs for one job. */
-export function dedupeByRole(postings) {
-  const seen = new Set();
+ *  LinkedIn often has several distinct posting IDs for one job; the full matrix also
+ *  produces many snapshots, so the same role arrives via different inputs.
+ *  Seed `existingKeys` with the sheet's roles to dedup across snapshots/runs too. */
+export function dedupeByRole(postings, existingKeys = []) {
+  const seen = new Set(existingKeys);
   const out = [];
   for (const p of postings) {
     const k = roleKey(p);
@@ -136,6 +138,24 @@ export async function readExistingJobIds(sheets, spreadsheetId) {
     if (v) ids.add(String(v));
   }
   return ids;
+}
+
+/** Read the set of existing role keys (company+title) from the main tab, for
+ *  cross-snapshot/cross-run dedup. Best-effort: returns empty if the columns
+ *  are absent (role dedup is a nicety, not the primary key — that's Job ID). */
+export async function readExistingRoleKeys(sheets, spreadsheetId) {
+  const keys = new Set();
+  const res = await sheets.spreadsheets.values.get({ spreadsheetId, range: `${MAIN_TAB}!A:${colLetter(MAIN_HEADERS.length)}` });
+  const rows = res.data.values || [];
+  if (rows.length < 2) return keys;
+  const cIdx = rows[0].indexOf('Company');
+  const tIdx = rows[0].indexOf('Title');
+  if (cIdx === -1 || tIdx === -1) return keys;
+  for (let i = 1; i < rows.length; i++) {
+    const k = roleKey({ company: rows[i][cIdx], title: rows[i][tIdx] });
+    if (k !== '||') keys.add(k);
+  }
+  return keys;
 }
 
 /** Append posting rows to the bottom of the main tab (USER_ENTERED so formulas render). */
