@@ -63,3 +63,41 @@ export function chunk(arr, n) {
   for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n));
   return out;
 }
+
+/**
+ * Normalize a Bright Data LinkedIn jobs record into the posting shape consumed
+ * by scoring/* and linkedin-sheets.js.
+ * @param {object} r - raw Bright Data jobs record
+ * @param {{archetype?: string, locationLabel?: string, snapshotId?: string}} meta
+ * @returns {object} posting
+ */
+export function normalizeRecord(r, meta = {}) {
+  const description = (r.job_summary || '').trim();
+  return {
+    jobId: String(r.job_posting_id || ''),
+    title: r.job_title || '',
+    company: r.company_name || '',
+    url: r.url || '',
+    platform: 'linkedin',
+    description,
+    snippet: description.slice(0, 320),
+    // parse-posted-date handles both ISO and "53 minutes ago"; prefer ISO
+    postedDate: r.job_posted_date || r.job_posted_time || '',
+    postedRaw: r.job_posted_time || '',
+    location: r.job_location || '',
+    employmentType: r.job_employment_type || '',
+    salary: r.job_base_pay_range || r.base_salary || '',
+    applicants: typeof r.job_num_applicants === 'number' ? r.job_num_applicants : '',
+    seniority: r.job_seniority_level || '',
+    logo: r.company_logo || '',
+    companyUrl: r.company_url || '',
+    applyLink: r.apply_link || r.url || '',
+    posterName: r.job_poster?.name || '',
+    posterUrl: r.job_poster?.url || '',
+    isEasyApply: Boolean(r.is_easy_apply),
+    discoveryArchetype: meta.archetype || '',
+    discoveryLocation: meta.locationLabel || '',
+    snapshotId: meta.snapshotId || '',
+    foundAt: new Date().toISOString(),
+  };
+}
