@@ -30,7 +30,11 @@ export class LinkedInJobsClient {
 
   async _guard(stage, res) {
     if (res.status === 401 || res.status === 403) {
-      throw new Error('BRIGHT_DATA_API_KEY missing or invalid');
+      // Surface the body: a 401/403 here can be a bad/expired token OR a
+      // credit/quota/rate rejection — the body distinguishes them.
+      let detail = '';
+      try { detail = (await res.text())?.slice(0, 200) || ''; } catch { /* body unavailable */ }
+      throw new Error(`BRIGHT_DATA_API_KEY rejected (${res.status}) at ${stage}${detail ? ` — ${detail}` : ' — empty body (likely gateway/quota)'}`);
     }
     if (!res.ok) {
       let body = '(no body)';

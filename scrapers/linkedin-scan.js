@@ -39,6 +39,7 @@ const args = process.argv.slice(2);
 const noTrigger = args.includes('--no-trigger');
 const noClassify = args.includes('--no-classify');
 const CLASSIFY_MIN_INTENT = 20;
+const TRIGGER_DELAY_MS = 1500; // pace triggers to avoid bursting Bright Data rate limits
 
 async function main() {
   // 1. Config + secrets
@@ -108,7 +109,8 @@ async function main() {
     const inputs = buildInputs(config);
     const chunks = chunk(inputs, config.chunk_size || 5);
     console.log(`Triggering ${chunks.length} chunks (${inputs.length} inputs)...`);
-    for (const group of chunks) {
+    for (let i = 0; i < chunks.length; i++) {
+      const group = chunks[i];
       const summary = group.map(g => `${g._archetype}/${g._locationLabel}:${g.keyword}`).join(' ; ').slice(0, 240);
       try {
         const snapshotId = await client.trigger(group.map(toApiInput));
@@ -116,7 +118,14 @@ async function main() {
         console.log(`  triggered ${snapshotId} (${group.length} inputs)`);
       } catch (err) {
         console.error(`  trigger failed for [${summary}]: ${err.message}`);
+        // Auth/quota rejection won't fix itself across the next 15 triggers —
+        // stop hammering Bright Data and fail loud with a clear cause.
+        if (/rejected \((401|403)\)|missing or invalid/i.test(err.message)) {
+          throw new Error(`Bright Data auth/quota rejection — aborting after ${i} of ${chunks.length} triggers. Check BRIGHT_DATA_API_KEY validity and account credits. (${err.message})`);
+        }
       }
+      // Pace triggers so a full matrix doesn't burst Bright Data's rate limits.
+      if (i < chunks.length - 1) await new Promise(r => setTimeout(r, TRIGGER_DELAY_MS));
     }
     // 6. Reconcile the freshly-triggered snapshots (poll until ready, then fetch)
     await pollUntilSettled({ store, client, onRecords });
