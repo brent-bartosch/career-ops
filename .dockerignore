@@ -1,0 +1,24 @@
+# Keep secrets and local cruft OUT of the Railway image.
+# Secrets are provided at runtime via Railway environment variables.
+.env
+.env.*
+credentials/
+
+node_modules
+.git
+.github
+.worktrees
+
+# Local data / outputs not needed by the LinkedIn scan
+output/
+batch/
+reports/
+jds/
+data/hopper/postings.json
+data/hopper/postings.csv
+
+# Docs / editor
+docs/
+.vscode/
+*.log
+.DS_Store
