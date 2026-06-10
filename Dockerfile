@@ -6,8 +6,10 @@ FROM node:22-slim
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+# package-lock.json is gitignored in this repo, so it isn't in the build context.
+# Use `npm install` (not `npm ci`, which requires a lockfile).
+COPY package.json ./
+RUN npm install --omit=dev --no-audit --no-fund
 
 COPY . .
 
