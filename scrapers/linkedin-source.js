@@ -101,3 +101,20 @@ export function normalizeRecord(r, meta = {}) {
     foundAt: new Date().toISOString(),
   };
 }
+
+/** True if a location string refers to Los Angeles. */
+export function isLosAngeles(location = '') {
+  return /los angeles/i.test(location);
+}
+
+/**
+ * Workplace rule: remote and hybrid pass anywhere (US); on-site passes only when
+ * the role is in Los Angeles; unknown passes (don't over-filter on a missing
+ * signal). `workplaceType` comes from the LLM classifier.
+ * @param {{workplaceType?: string, location?: string}} posting
+ * @returns {boolean}
+ */
+export function passesWorkplaceRule(posting) {
+  if (posting.workplaceType === 'onsite') return isLosAngeles(posting.location);
+  return true;
+}

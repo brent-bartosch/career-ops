@@ -20,7 +20,7 @@ import { config as loadEnv } from 'dotenv';
 
 import { getAuthClient } from './sheets-auth.js';
 import { LinkedInJobsClient } from './linkedin-jobs-client.js';
-import { buildInputs, toApiInput, chunk, normalizeRecord } from './linkedin-source.js';
+import { buildInputs, toApiInput, chunk, normalizeRecord, passesWorkplaceRule } from './linkedin-source.js';
 import { reconcile, adoptOrphans } from './snapshot-ledger.js';
 import {
   MAIN_TAB, RUNS_TAB, MAIN_HEADERS, RUNS_HEADERS,
@@ -88,15 +88,18 @@ async function main() {
         if ((p.intentScore || 0) < CLASSIFY_MIN_INTENT) continue;
         try {
           const c = await classifyPosting(p, { apiKey: openRouterKey });
-          if (c) Object.assign(p, { country: c.country, employmentType: c.employmentType, duration: c.duration, roleFit: c.roleFit, fitScore: c.fitScore, fitReason: c.fitReason, dealBreakers: c.dealBreakers });
+          if (c) Object.assign(p, { country: c.country, workplaceType: c.workplaceType, employmentType: c.employmentType, duration: c.duration, roleFit: c.roleFit, fitScore: c.fitScore, fitReason: c.fitReason, dealBreakers: c.dealBreakers });
         } catch (err) {
           console.warn(`classify failed for ${p.company} — ${err.message}`); // keep posting, intent-only
         }
       }
     }
-    const n = await appendPostings(sheets, spreadsheetId, fresh);
+    // workplace rule: drop on-site roles that aren't in Los Angeles
+    const final = fresh.filter(passesWorkplaceRule);
+    const droppedOnsite = fresh.length - final.length;
+    const n = await appendPostings(sheets, spreadsheetId, final);
     totalAppended += n;
-    console.log(`  snapshot ${snapshotId}: ${records.length} records → ${n} new rows (dropped ${droppedNoise} off-target, ${droppedRepeat} repeat roles)`);
+    console.log(`  snapshot ${snapshotId}: ${records.length} records → ${n} new rows (dropped ${droppedNoise} off-target, ${droppedRepeat} repeat roles, ${droppedOnsite} onsite-non-LA)`);
   };
 
   const now = new Date().toISOString();

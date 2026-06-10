@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { buildInputs, chunk, normalizeRecord } from './linkedin-source.js';
+import { buildInputs, chunk, normalizeRecord, passesWorkplaceRule } from './linkedin-source.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SAMPLE = JSON.parse(
@@ -75,4 +75,13 @@ test('normalizeRecord: maps a Bright Data jobs record to the posting shape', () 
 test('normalizeRecord: applyLink falls back to job url when apply_link is null', () => {
   const p = normalizeRecord({ ...SAMPLE, apply_link: null }, {});
   assert.equal(p.applyLink, SAMPLE.url);
+});
+
+test('passesWorkplaceRule: remote/hybrid/unknown pass; on-site only in LA', () => {
+  assert.equal(passesWorkplaceRule({ workplaceType: 'remote', location: 'United States' }), true);
+  assert.equal(passesWorkplaceRule({ workplaceType: 'hybrid', location: 'New York, NY' }), true);
+  assert.equal(passesWorkplaceRule({ workplaceType: 'unknown', location: 'Austin, TX' }), true);
+  assert.equal(passesWorkplaceRule({ workplaceType: 'onsite', location: 'San Francisco, CA' }), false);
+  assert.equal(passesWorkplaceRule({ workplaceType: 'onsite', location: 'Los Angeles, CA' }), true);
+  assert.equal(passesWorkplaceRule({ workplaceType: 'onsite', location: 'Greater Los Angeles' }), true);
 });
