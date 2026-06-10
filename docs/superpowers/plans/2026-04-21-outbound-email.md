@@ -83,7 +83,7 @@ touch outreach/.gitkeep
 
 - [ ] **Step 2: Add `outreach/` to `.gitignore`**
 
-Append to `/Users/brentbartosch/Development/Smoothed/career-ops/.gitignore`:
+Append to `.gitignore`:
 
 ```
 # Outbound playbook artifacts (user layer — contains verified target emails)
