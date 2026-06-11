@@ -6,6 +6,15 @@ chunk_size: 5
 # Relevance gate: only append postings that match >=1 archetype (kills the
 # fuzzy-keyword noise LinkedIn returns). Set false to append everything.
 require_archetype_match: true
+# Title denylist: drop any posting whose title contains one of these (case-
+# insensitive substring), regardless of how it matched. Add titles that "don't
+# work" here. These roles leak in via responsibility-keyword matches otherwise.
+title_exclude:
+  - "sales engineer"
+  - "solutions engineer"
+  - "pre-sales"
+  - "presales"
+  - "technical solutions engineer"
 defaults:
   country: US
   time_range: "Past 24 hours"   # daily cadence

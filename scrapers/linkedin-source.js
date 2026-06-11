@@ -118,3 +118,15 @@ export function passesWorkplaceRule(posting) {
   if (posting.workplaceType === 'onsite') return isLosAngeles(posting.location);
   return true;
 }
+
+/**
+ * True if the title contains any denylisted term (case-insensitive substring).
+ * Catches unwanted roles that match an archetype via responsibility keywords.
+ * @param {string} title
+ * @param {string[]} excludeList
+ * @returns {boolean}
+ */
+export function isExcludedTitle(title, excludeList = []) {
+  const t = (title || '').toLowerCase();
+  return excludeList.some(term => term && t.includes(String(term).toLowerCase()));
+}
