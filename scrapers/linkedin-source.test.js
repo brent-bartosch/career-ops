@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { buildInputs, chunk, normalizeRecord, passesWorkplaceRule } from './linkedin-source.js';
+import { buildInputs, chunk, normalizeRecord, passesWorkplaceRule, isExcludedTitle } from './linkedin-source.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SAMPLE = JSON.parse(
@@ -75,6 +75,16 @@ test('normalizeRecord: maps a Bright Data jobs record to the posting shape', () 
 test('normalizeRecord: applyLink falls back to job url when apply_link is null', () => {
   const p = normalizeRecord({ ...SAMPLE, apply_link: null }, {});
   assert.equal(p.applyLink, SAMPLE.url);
+});
+
+test('isExcludedTitle: drops denylisted titles (substring, case-insensitive), keeps GTM roles', () => {
+  const deny = ['sales engineer', 'solutions engineer', 'technical solutions engineer'];
+  assert.equal(isExcludedTitle('Senior Sales Engineer', deny), true);
+  assert.equal(isExcludedTitle('Technical Solutions Engineer, Performance Ads', deny), true);
+  assert.equal(isExcludedTitle('AI Solutions Engineer', deny), true);
+  assert.equal(isExcludedTitle('GTM Engineer', deny), false);
+  assert.equal(isExcludedTitle('Forward Deployed Engineer', deny), false);
+  assert.equal(isExcludedTitle('Head of GTM', deny), false);
 });
 
 test('passesWorkplaceRule: remote/hybrid/unknown pass; on-site only in LA', () => {
