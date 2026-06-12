@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.8.0](https://github.com/brent-bartosch/career-ops/compare/career-ops-v1.7.1...career-ops-v1.8.0) (2026-06-12)
+
+
+### Features
+
+* **linkedin:** add GTM discovery query config ([efe45be](https://github.com/brent-bartosch/career-ops/commit/efe45be9ee3e833ea5e7019f2bc5a189d83cfd88))
+* **linkedin:** archetype relevance gate + role dedup ([223af81](https://github.com/brent-bartosch/career-ops/commit/223af8148e6a5ce2f6e288b5e49db1ea23ab5ad9))
+* **linkedin:** Bright Data jobs discover client (async snapshots) ([b0020a8](https://github.com/brent-bartosch/career-ops/commit/b0020a8f49187c78e41da41f471027fd07665a33))
+* **linkedin:** cross-snapshot/cross-run role dedup ([cf8e8b0](https://github.com/brent-bartosch/career-ops/commit/cf8e8b0708072b6c1372f5c20e79470ed6fa110f))
+* **linkedin:** daily Bright Data LinkedIn GTM scan → visual Sheet (Railway cron) ([638557c](https://github.com/brent-bartosch/career-ops/commit/638557cf1d099da06d7fe1f54320c7638c156df9))
+* **linkedin:** input matrix builder + chunker ([6e7c457](https://github.com/brent-bartosch/career-ops/commit/6e7c4572df2250536720c8453d003b0585667d83))
+* **linkedin:** normalize Bright Data jobs record to posting shape ([54cb8be](https://github.com/brent-bartosch/career-ops/commit/54cb8be52d836df48b119cfc0123a934a0d06f80))
+* **linkedin:** Railway config-as-code (cron 0 13 * * *, start cmd, no-restart) ([f583726](https://github.com/brent-bartosch/career-ops/commit/f58372632c21f701b439da1573db4179df137ac2))
+* **linkedin:** Railway cron deployment (Dockerfile + dockerignore + operator docs) ([ef2af42](https://github.com/brent-bartosch/career-ops/commit/ef2af42b3c2637d96533b7772195632ed4b02bee))
+* **linkedin:** scan orchestrator + npm scripts + test registration ([10f6caf](https://github.com/brent-bartosch/career-ops/commit/10f6caf925ad825b7a3f9119aa2f61541c0ffc10))
+* **linkedin:** snapshot ledger + reconciler (no-lost-output guarantee) ([9b14e4d](https://github.com/brent-bartosch/career-ops/commit/9b14e4de2cb4a161ee647a2ffdc9d3f6d79fab2c))
+* **linkedin:** surface Workplace (remote/hybrid/onsite) column in the sheet ([68c7e5e](https://github.com/brent-bartosch/career-ops/commit/68c7e5e101d90167b0ea1894e73b038bdcf5959d))
+* **linkedin:** visual sheet writer + _runs ledger store ([8feca90](https://github.com/brent-bartosch/career-ops/commit/8feca907cf2c45449e6cab21a1e061aa5d94e0e7))
+* **linkedin:** Workplace column (remote/hybrid/onsite) in the sheet ([fcbb0f5](https://github.com/brent-bartosch/career-ops/commit/fcbb0f5a985c4c97ab22cd9b72b834a1cbc7ba72))
+* **outbound:** hiring-manager email outreach pipeline ([c65d820](https://github.com/brent-bartosch/career-ops/commit/c65d82085a9f5d289f2689687ff090db4eca79df))
+* **scan:** optional location_filter in portals.yml + persist location to scan-history ([#570](https://github.com/brent-bartosch/career-ops/issues/570)) ([d692647](https://github.com/brent-bartosch/career-ops/commit/d692647c253a0bf92a4f9f3b8043afe2c8161853))
+* **scoring:** add gtm_engineer + head_of_gtm archetypes ([520a38f](https://github.com/brent-bartosch/career-ops/commit/520a38f915ffa4cb646740f76e273603c52c93d4))
+* **sheets:** env-or-file service account auth helper ([36f21ed](https://github.com/brent-bartosch/career-ops/commit/36f21ed8b2d5486ec3bca71053ae94988089f854))
+
+
+### Bug Fixes
+
+* **docker:** npm install instead of npm ci (lockfile is gitignored) ([f85463c](https://github.com/brent-bartosch/career-ops/commit/f85463c9c7fedfc9257dfb743a83c9f4c15def2b))
+* **docker:** use npm install (lockfile is gitignored, npm ci can't run) ([6cf86c0](https://github.com/brent-bartosch/career-ops/commit/6cf86c09bb9398b85e284f12f2f19d9f306ca48b))
+* **linkedin:** accept existing BRIGHTDATA_API_KEY env name as fallback ([c4949c3](https://github.com/brent-bartosch/career-ops/commit/c4949c3c9aca2f351596bf795bdbaee94963ff59))
+* **linkedin:** pace triggers + abort on auth/quota rejection, surface 401/403 body ([3f6543c](https://github.com/brent-bartosch/career-ops/commit/3f6543c2ae70e643f60562874350ca39e9ec6212))
+* **linkedin:** track test fixture, make failed snapshots terminal, fail-loud dedup read ([b00e100](https://github.com/brent-bartosch/career-ops/commit/b00e100955e7376f3c8f002b8e2d57c545280cf1))
+* **modes:** make /career-ops deep respect user language, not JD language ([#568](https://github.com/brent-bartosch/career-ops/issues/568)) ([e5f0508](https://github.com/brent-bartosch/career-ops/commit/e5f0508b94299a0e6b46918ecca2f483de0a58c6))
+* **release:** sync VERSION file to 1.7.1 ([2ebfcab](https://github.com/brent-bartosch/career-ops/commit/2ebfcabdb4cf7973e279e56f8eae001a8dadc5ed))
+* **update-system:** allow writing-samples/README.md as system-owned file ([#562](https://github.com/brent-bartosch/career-ops/issues/562)) ([207fd07](https://github.com/brent-bartosch/career-ops/commit/207fd076da3b2a30f0384fdb19312078ebdcf71f))
+
 ## [1.7.1](https://github.com/santifer/career-ops/compare/career-ops-v1.7.0...career-ops-v1.7.1) (2026-05-12)
 
 
