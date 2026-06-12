@@ -12,6 +12,7 @@ require_archetype_match: true
 title_exclude:
   - "sales engineer"
   - "solutions engineer"
+  - "solutions architect"
   - "pre-sales"
   - "presales"
   - "technical solutions engineer"
