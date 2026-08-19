@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Brent Bartosch — GTM Engineer</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 10.5px;
+    line-height: 1.5;
+    color: #1a1a1a;
+    background: #fff;
+  }
+  .page { width: 100%; }
+
+  /* HEADER */
+  .name {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: #111;
+    margin-bottom: 3px;
+  }
+  .tagline {
+    font-size: 12px;
+    font-weight: 600;
+    color: #2b6cb0;
+    margin-bottom: 5px;
+  }
+  .contact {
+    font-size: 9.5px;
+    color: #555;
+    margin-bottom: 4px;
+  }
+  .contact a { color: #555; text-decoration: none; }
+
+  /* SECTIONS */
+  .section { margin-top: 13px; }
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #2b6cb0;
+    border-bottom: 1px solid #2b6cb0;
+    padding-bottom: 2px;
+    margin-bottom: 7px;
+  }
+
+  .summary { font-size: 10.5px; line-height: 1.55; color: #222; }
+
+  /* SYSTEMS / bullet lists */
+  ul { padding-left: 15px; margin: 0; }
+  li { font-size: 10px; line-height: 1.5; color: #222; margin-bottom: 4px; }
+  li strong { font-weight: 700; color: #111; }
+
+  /* EXPERIENCE */
+  .job { margin-bottom: 10px; break-inside: avoid; page-break-inside: avoid; }
+  .job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .job-role { font-size: 11px; font-weight: 700; color: #111; }
+  .job-period { font-size: 9.5px; color: #777; white-space: nowrap; }
+  .job-company { font-size: 10.5px; font-weight: 600; color: #2b6cb0; margin-bottom: 1px; }
+  .job-desc { font-size: 9.5px; font-style: italic; color: #666; margin-bottom: 4px; }
+  .job ul { margin-top: 3px; }
+
+  .section-block { break-inside: avoid; page-break-inside: avoid; }
+  .stack-line { font-size: 10px; line-height: 1.6; color: #222; margin-bottom: 2px; }
+  .stack-line strong { color: #111; font-weight: 700; }
+  .edu-line { font-size: 10px; color: #222; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="section-block">
+    <div class="name">Brent Bartosch</div>
+    <div class="tagline">GTM Engineer &nbsp;|&nbsp; AI-Native Growth Systems &nbsp;|&nbsp; Demand Capture &rarr; Pipeline</div>
+    <div class="contact">
+      +1-310-743-3616 &nbsp;&bull;&nbsp; brent.bartosch@gmail.com &nbsp;&bull;&nbsp; Los Angeles, CA (available Hawaii Standard Time hours)
+    </div>
+    <div class="contact">
+      <a href="https://linkedin.com/in/brent-bartosch">linkedin.com/in/brent-bartosch</a> &nbsp;&bull;&nbsp;
+      <a href="https://github.com/brent-bartosch">github.com/brent-bartosch</a> &nbsp;&bull;&nbsp;
+      <a href="https://smoothed.io">smoothed.io</a>
+    </div>
+  </div>
+
+  <div class="section section-block">
+    <div class="section-title">Summary</div>
+    <div class="summary">
+      GTM Engineer who treats growth as an engineering problem &mdash; 7+ years carrying enterprise SaaS revenue paired with hands-on build depth in Claude Code, Python, TypeScript, SQL, APIs, and LLM workflows. I reason about CAC/LTV and then write the code that moves it: capturing demand, defining sales-worthy intent, enriching and scoring leads, and delivering decision-ready context to reps within minutes. Strong bias to action &mdash; I ship a working prototype, watch real numbers move, and iterate. Every system I build is instrumented for cost, conversion, and revenue from the start.
+    </div>
+  </div>
+
+  <div class="section section-block">
+    <div class="section-title">Selected GTM Systems Built</div>
+    <ul>
+      <li><strong>Signal-to-action for reps:</strong> Built a multi-source buying-signal pipeline (Reddit, Hacker News, X, GitHub) capturing ~1,100 signals/day into Supabase Edge Functions / pg_cron &mdash; LLM tiering, deterministic qualification scoring, and human-in-the-loop Slack routing that turns raw data into sales-ready intelligence under a 4-hour SLA.</li>
+      <li><strong>ICP scoring &amp; lead routing:</strong> Built an 8-stage trial-conversion pipeline taking a raw signup to a scored, routed, sales-ready opportunity in under 90 seconds &mdash; intake validation, AI enrichment, product-signal extraction, hybrid ICP scoring, deterministic routing (ICP tier &times; engagement &rarr; sales motion), and AI dossier generation so reps receive context, not just lead objects. End-to-end cost under $0.04/lead.</li>
+      <li><strong>Multi-channel prospecting + deliverability:</strong> Architected an autonomous outbound and enrichment engine across 150+ mailboxes via Smartlead API &mdash; list build, qualification, personalization, A/B testing (sequences/subject lines/send times), reply-detection routing, and CRM sync &mdash; backed by deliverability infrastructure (SPF/DKIM/DMARC, automated domain warmup, rotation, bounce handling, reputation monitoring) that keeps it landing in the inbox. Launch time ~8 hours &rarr; ~3 minutes; client CAC down ~90%.</li>
+      <li><strong>ABM &amp; paid media:</strong> Restructured an enterprise outbound motion into an account-based approach (+157% reply rate); audited Google Ads for a FedRAMP-authorized AI platform, surfaced $81K in misdirected spend plus a critical negative keyword blocking core-ICP searches, and rebuilt campaign architecture from scratch &mdash; connecting ad-platform engagement to down-funnel pipeline.</li>
+      <li><strong>AI search &amp; organic demand:</strong> Built "The War Machine," an autonomous programmatic-SEO and competitive-intelligence engine connecting Google Ads keyword signals to LLM-generated content &mdash; operationalizing how a brand surfaces across search and AI-generated answers, with a feedback loop between paid signals and organic content strategy.</li>
+      <li><strong>CRM data quality &amp; integration:</strong> Shipped production CRM integrations modeling Leads, Opportunities, Tasks, and custom objects across Close (API + webhooks), Day.ai (OAuth 2.0 + MCP), Twenty (GraphQL), HubSpot, and QuickBooks &mdash; routing logic, deduplication, and enrichment, not form-building.</li>
+      <li><strong>Architecture discipline:</strong> Separated deterministic logic from LLM judgment for routing, scoring, and validation; confidence scoring and independent AI quality gates at every stage &mdash; legible, auditable systems built on Zapier/n8n-style event-driven patterns and custom code alike.</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Professional Experience</div>
+
+    <div class="job">
+      <div class="job-header">
+        <span class="job-role">Founder &amp; Principal GTM Engineer</span>
+        <span class="job-period">Dec 2022 &ndash; Present</span>
+      </div>
+      <div class="job-company">Smoothed.io &nbsp;|&nbsp; Los Angeles, CA</div>
+      <div class="job-desc">GTM engineering consultancy building revenue automation across inbound intake, product-signal scoring, enrichment, outbound, CRM workflows, analytics, and AI-assisted personalization for B2B SaaS and e-commerce clients.</div>
+      <ul>
+        <li>Built an 8-stage product-led trial-conversion engine: raw trial signup &rarr; AI enrichment &rarr; product-signal extraction &rarr; hybrid ICP scoring &rarr; deterministic routing &rarr; AI lead-dossier + first-touch email &rarr; independent AI quality gate; signup to scored, routed, sales-ready opportunity in under 90 seconds at under $0.04/lead.</li>
+        <li>Built a multi-source buying-signal pipeline (Reddit, Hacker News, X, GitHub) capturing ~1,100 signals/day into Supabase Edge Functions / pg_cron with LLM tiering, deterministic qualification scoring, and Slack-based human-in-the-loop routing for Tier-1 intent (&lt;4hr SLA).</li>
+        <li>Architected an autonomous outbound and enrichment engine managing 150+ mailboxes via Smartlead API &mdash; list build and qualification through personalization, sequencing, reply capture, and CRM handoff, with SPF/DKIM/DMARC, warmup, rotation, and bounce handling; launch time ~8 hours &rarr; ~3 minutes.</li>
+        <li>Reduced client CAC by ~90% through multi-source data pipelines with automated qualification, enrichment, deduplication, routing, and CRM handoff across Close, Day.ai, Twenty, and HubSpot.</li>
+        <li>Designed a queue-based state-machine architecture with concurrent processing, checkpoint/resume recovery, stall detection, exponential backoff, retries, and failure handling &mdash; crash-safe across all workflows.</li>
+      </ul>
+    </div>
+
+    <div class="job">
+      <div class="job-header">
+        <span class="job-role">Contract GTM Engineer</span>
+        <span class="job-period">2026 &ndash; Present</span>
+      </div>
+      <div class="job-company">GovSignals &nbsp;|&nbsp; Remote</div>
+      <div class="job-desc">FedRAMP-authorized AI platform for government contractors. Embedded as sole GTM engineer across analytics infrastructure, paid acquisition, and data pipelines.</div>
+      <ul>
+        <li>Audited Google Ads and uncovered $81K in misdirected spend plus a critical negative keyword blocking core-ICP searches; rebuilt campaign architecture from scratch.</li>
+        <li>Built a custom executive-facing revenue analytics app (Vercel) integrating GA4, Google Ads, and Google Search Console with a BigQuery layer correlating ad performance to pipeline for full-funnel decision-making.</li>
+        <li>Built a corpus enrichment pipeline (998 lines, 27 passing tests) connecting keyword data to backend knowledge bases using embeddings, chunking strategy, retrieval evaluation, and quality gates.</li>
+      </ul>
+    </div>
+
+    <div class="job">
+      <div class="job-header">
+        <span class="job-role">Vice President of Sales</span>
+        <span class="job-period">Jul 2022 &ndash; Feb 2023</span>
+      </div>
+      <div class="job-company">Crealytics &nbsp;|&nbsp; Los Angeles, CA</div>
+      <div class="job-desc">Predictive marketing intelligence platform and retail media SSP. Laid off due to company restructuring.</div>
+      <ul>
+        <li>Closed 2 full-service clients accounting for $1.45M total revenue in first 5 months.</li>
+        <li>Restructured outbound motion into an ABM approach, improving reply rate by +157%; hired and onboarded a BDR.</li>
+      </ul>
+    </div>
+
+    <div class="job">
+      <div class="job-header">
+        <span class="job-role">Sales Director</span>
+        <span class="job-period">Jun 2020 &ndash; Jul 2022</span>
+      </div>
+      <div class="job-company">Skai (fka Kenshoo) &nbsp;|&nbsp; Los Angeles, CA</div>
+      <div class="job-desc">Enterprise predictive marketing intelligence platform.</div>
+      <ul>
+        <li>Exceeded quota: 143% Year 1, 111% Year 2; managed full-cycle enterprise sales with complex buying committees.</li>
+        <li>Closed the company's largest app sale: HBO Max at $800K ACV; partnered with solutions architects and TAMs on custom API integrations and technical discovery.</li>
+        <li>Managed enterprise compliance workflows involving PII, CCPA, and GDPR, translating buyer requirements into technical and operational next steps.</li>
+      </ul>
+    </div>
+
+    <div class="job">
+      <div class="job-header">
+        <span class="job-role">Enterprise Account Executive / Team Lead, SDRs</span>
+        <span class="job-period">Sep 2017 &ndash; Jun 2020</span>
+      </div>
+      <div class="job-company">Conversion Logic &nbsp;|&nbsp; Los Angeles, CA</div>
+      <div class="job-desc">Multi-touch attribution and marketing data platform.</div>
+      <ul>
+        <li>Closed 2 accounts in first 60 days ($390K ARR); contributed to a 31% increase in total ARR during tenure.</li>
+        <li>Partnered with Marketing, Data Science, and Engineering on attribution modeling integrations, data-ingestion standards, and enterprise analytics requirements.</li>
+        <li>Oversaw 2 SDRs and improved MQL generation by +67% in Year 1.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section section-block">
+    <div class="section-title">Technical Stack</div>
+    <div class="stack-line"><strong>Languages:</strong> SQL, Python, TypeScript, Node.js</div>
+    <div class="stack-line"><strong>GTM / RevOps:</strong> HubSpot, Salesforce, Smartlead, Clay, Zapier / n8n (event-driven automation), Mixpanel, PostHog, Google Ads API, GA4, Google Search Console, SEMrush</div>
+    <div class="stack-line"><strong>Data / Infra:</strong> Supabase, PostgreSQL, pgvector, BigQuery, Railway, Vercel, Edge Functions, pg_cron, OAuth, REST &amp; GraphQL APIs, webhooks, database triggers, rate limiting, error handling</div>
+    <div class="stack-line"><strong>AI / Automation:</strong> Claude Code, Claude API, OpenRouter, multi-step AI agent workflows, RAG pipelines, embeddings, deterministic scoring &amp; routing, output validation, evals</div>
+    <div class="stack-line"><strong>Deliverability &amp; ABM:</strong> SPF/DKIM/DMARC, domain warmup, bounce handling, audience targeting, suppression &amp; match-rate workflows</div>
+  </div>
+
+  <div class="section section-block">
+    <div class="section-title">Education &amp; Certifications</div>
+    <div class="edu-line">BA, Business Administration &mdash; Loyola Marymount University &nbsp;&bull;&nbsp; AWS Certified Cloud Practitioner (2023) &nbsp;&bull;&nbsp; MEDDPICC Masterclass Certification (2023)</div>
+  </div>
+
+</div>
+</body>
+</html>
