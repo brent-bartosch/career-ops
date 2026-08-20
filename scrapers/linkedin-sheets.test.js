@@ -17,7 +17,7 @@ test('postingToRow: produces a row aligned to MAIN_HEADERS with visual cells', (
   const posting = {
     jobId: '123', title: 'GTM Engineer', company: 'Acme', url: 'http://job/123',
     companyUrl: 'http://acme', logo: 'http://acme/logo.png', applyLink: 'http://apply/123',
-    location: 'Los Angeles', employmentType: 'Full-time', salary: '$150k', applicants: 12,
+    location: 'Los Angeles', workplaceType: 'remote', employmentType: 'Full-time', salary: '$150k', applicants: 12,
     seniority: 'Mid-Senior', postedDate: '2026-06-08T00:00:00Z', postedRaw: '1 day ago',
     archetypes: ['gtm_engineer'], intentScore: 55, fitScore: 72, roleFit: 'good',
     fitReason: 'API-direct GTM build', posterName: 'Jane', posterUrl: 'http://li/jane',
@@ -31,6 +31,7 @@ test('postingToRow: produces a row aligned to MAIN_HEADERS with visual cells', (
   assert.equal(row[MAIN_HEADERS.indexOf('Apply')], '=HYPERLINK("http://apply/123","Apply")');
   assert.equal(row[MAIN_HEADERS.indexOf('Job ID')], '123');
   assert.equal(row[MAIN_HEADERS.indexOf('Archetypes')], 'gtm_engineer');
+  assert.equal(row[MAIN_HEADERS.indexOf('Workplace')], 'remote');
 });
 
 test('dedupeNew: drops postings whose jobId already exists in the sheet', () => {

@@ -40,6 +40,7 @@ Return ONLY valid JSON matching this exact schema, no markdown, no commentary:
 {
   "country": "US" | "UK" | "France" | "Germany" | "Ireland" | "Canada" | "Remote" | "Unknown",
   "countryConfidence": "high" | "medium" | "low",
+  "workplaceType": "remote" | "hybrid" | "onsite" | "unknown",
   "employmentType": "full_time" | "contract" | "fractional" | "contract_to_hire" | "unknown",
   "duration": "string describing duration or 'unknown' or 'ongoing'",
   "roleFit": "good" | "partial" | "poor",
@@ -50,6 +51,7 @@ Return ONLY valid JSON matching this exact schema, no markdown, no commentary:
 
 Rules:
 - "country": where the role is based. If explicitly "Remote - US" or "US remote" → US. If "Remote" alone with no country → Remote. If UK/EMEA/Paris/Berlin/London etc → that country.
+- "workplaceType": the work arrangement, independent of country. "remote" = fully remote / work-from-anywhere. "hybrid" = mix of in-office and remote. "onsite" = required in-office or on-location. "unknown" if not stated.
 - "employmentType":
   - "full_time" = W2 full-time employee, salary + benefits
   - "contract" = W2 or 1099 contract, defined end date, no benefits. Includes staff aug.
@@ -116,6 +118,7 @@ export function parseClassifierResponse(raw) {
   return {
     country: String(parsed.country || 'Unknown'),
     countryConfidence: String(parsed.countryConfidence || 'low'),
+    workplaceType: String(parsed.workplaceType || 'unknown'),
     employmentType: String(parsed.employmentType || 'unknown'),
     duration: String(parsed.duration || 'unknown'),
     roleFit: String(parsed.roleFit || 'poor'),

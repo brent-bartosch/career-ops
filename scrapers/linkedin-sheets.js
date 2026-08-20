@@ -15,7 +15,7 @@ export const MAIN_TAB = 'Postings';
 export const RUNS_TAB = '_runs';
 
 export const MAIN_HEADERS = [
-  'Logo', 'Posted', 'Posted (raw)', 'Company', 'Title', 'Location',
+  'Logo', 'Posted', 'Posted (raw)', 'Company', 'Title', 'Location', 'Workplace',
   'Type', 'Salary', 'Applicants', 'Seniority', 'Archetypes', 'Intent',
   'Fit', 'Role Fit', 'Fit Reason', 'Apply', 'Recruiter',
   'Status', 'Priority', 'Notes',          // user columns (preserved)
@@ -50,6 +50,7 @@ export function postingToRow(p) {
     'Company': sheetHyperlink(p.companyUrl, p.company),
     'Title': sheetHyperlink(p.url, p.title),
     'Location': p.location || '',
+    'Workplace': p.workplaceType || '',
     'Type': p.employmentType || '',
     'Salary': p.salary || '',
     'Applicants': p.applicants ?? '',
