@@ -37,8 +37,10 @@ export class LinkedInJobsClient {
       throw new Error(`BRIGHT_DATA_API_KEY rejected (${res.status}) at ${stage}${detail ? ` — ${detail}` : ' — empty body (likely gateway/quota)'}`);
     }
     if (!res.ok) {
+      // Bright Data returns plain-text errors (e.g. "Customer is not active") with
+      // a text/html body, so read .text() — .json() would swallow the real reason.
       let body = '(no body)';
-      try { body = JSON.stringify(await res.json()).slice(0, 200); } catch { /* non-JSON */ }
+      try { body = (await res.text())?.trim()?.slice(0, 300) || body; } catch { /* non-text */ }
       throw new Error(`Bright Data ${stage} failed: ${res.status} — ${body}`);
     }
   }
@@ -100,4 +102,17 @@ export class LinkedInJobsClient {
     const arr = Array.isArray(body) ? body : [];
     return arr.map(s => ({ id: s.id || s.snapshot_id, status: s.status })).filter(s => s.id);
   }
+}
+
+/**
+ * True when an error indicates a fatal Bright Data account/auth condition that
+ * retrying will NOT fix (account inactive/suspended, or auth/quota rejection),
+ * versus a transient network/rate error that should be retried next run.
+ */
+export function isFatalBrightDataError(err) {
+  const m = String(err?.message || err || '');
+  return (
+    /rejected \((401|403)\)|missing or invalid/i.test(m) ||
+    /not active|deactivated|suspended|account.*(inactive|suspended|disabled|closed)|subscription.*(expired|inactive|ended|canceled)|customer is not active/i.test(m)
+  );
 }

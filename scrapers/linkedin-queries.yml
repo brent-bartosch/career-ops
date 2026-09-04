@@ -28,7 +28,7 @@ locations:
   - { label: la_contract,        location: "Los Angeles",   remote: "",        job_type: "Contract" }
 # Only these archetypes are *discovered* (cost control). Classification still
 # tags ALL archetypes in scoring/archetype-matcher.js.
-discovery_archetypes: [gtm_engineer, head_of_gtm]
+discovery_archetypes: [gtm_engineer, head_of_gtm, contract_fractional]
 archetypes:
   gtm_engineer:
     keywords:
@@ -50,3 +50,24 @@ archetypes:
       - "head of growth"
       - "head of revenue"
       - "GTM lead"
+  contract_fractional:
+    keywords:
+      - "fractional revops"
+      - "fractional revenue operations"
+      - "fractional GTM"
+      - "fractional CRO"
+      - "fractional head of revenue"
+      - "fractional marketing operations"
+      - "fractional CMO"
+      - "contract revops"
+      - "contract revenue operations"
+      - "contract GTM"
+      - "contract marketing operations"
+      - "interim head of revenue"
+      - "interim VP revenue"
+      - "interim head of marketing"
+      - "revops consultant"
+      - "GTM consultant"
+      - "revenue operations consultant"
+      - "marketing operations consultant"
+      - "integration consultant"

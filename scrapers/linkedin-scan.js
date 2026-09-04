@@ -19,7 +19,7 @@ import { google } from 'googleapis';
 import { config as loadEnv } from 'dotenv';
 
 import { getAuthClient } from './sheets-auth.js';
-import { LinkedInJobsClient } from './linkedin-jobs-client.js';
+import { LinkedInJobsClient, isFatalBrightDataError } from './linkedin-jobs-client.js';
 import { buildInputs, toApiInput, chunk, normalizeRecord, passesWorkplaceRule, isExcludedTitle } from './linkedin-source.js';
 import { reconcile, adoptOrphans } from './snapshot-ledger.js';
 import {
@@ -51,6 +51,15 @@ async function main() {
   const openRouterKey = process.env.OPEN_ROUTER_API_KEY || process.env.OPENROUTER_API_KEY;
 
   const client = new LinkedInJobsClient({ apiKey, datasetId: config.dataset_id });
+
+  // 1b. Preflight: confirm the Bright Data account is active (cheap GET) before
+  // we burn Sheets quota or Bright Data credits on a run that cannot succeed.
+  try {
+    await client.listSnapshots();
+  } catch (err) {
+    if (isFatalBrightDataError(err)) throw err;
+    console.warn(`preflight listSnapshots failed (non-fatal): ${err.message}`);
+  }
 
   // 2. Auth + sheets client + tabs
   const authClient = await getAuthClient();
@@ -116,23 +125,30 @@ async function main() {
     const inputs = buildInputs(config);
     const chunks = chunk(inputs, config.chunk_size || 5);
     console.log(`Triggering ${chunks.length} chunks (${inputs.length} inputs)...`);
+    let triggered = 0;
     for (let i = 0; i < chunks.length; i++) {
       const group = chunks[i];
       const summary = group.map(g => `${g._archetype}/${g._locationLabel}:${g.keyword}`).join(' ; ').slice(0, 240);
       try {
         const snapshotId = await client.trigger(group.map(toApiInput));
+        triggered += 1;
         await store.append({ snapshot_id: snapshotId, trigger_time: now, inputs_summary: summary, status: 'triggered', rows_captured: '', error: '' });
         console.log(`  triggered ${snapshotId} (${group.length} inputs)`);
       } catch (err) {
         console.error(`  trigger failed for [${summary}]: ${err.message}`);
-        // Auth/quota rejection won't fix itself across the next 15 triggers —
-        // stop hammering Bright Data and fail loud with a clear cause.
-        if (/rejected \((401|403)\)|missing or invalid/i.test(err.message)) {
-          throw new Error(`Bright Data auth/quota rejection — aborting after ${i} of ${chunks.length} triggers. Check BRIGHT_DATA_API_KEY validity and account credits. (${err.message})`);
+        // Fatal account/auth failures (bad key, quota, account inactive) won't fix
+        // themselves across the remaining triggers — stop and fail loud.
+        if (isFatalBrightDataError(err)) {
+          throw new Error(`Bright Data account/auth failure — aborting after ${i} of ${chunks.length} triggers. (${err.message})`);
         }
       }
       // Pace triggers so a full matrix doesn't burst Bright Data's rate limits.
       if (i < chunks.length - 1) await new Promise(r => setTimeout(r, TRIGGER_DELAY_MS));
+    }
+    // Fail loud if nothing was queued — a "successful" run that appended 0 rows is
+    // exactly the silent-failure mode we're guarding against.
+    if (chunks.length > 0 && triggered === 0) {
+      throw new Error(`All ${chunks.length} Bright Data triggers failed — nothing was queued. Check the errors above (account/key/dataset).`);
     }
     // 6. Reconcile the freshly-triggered snapshots (poll until ready, then fetch)
     await pollUntilSettled({ store, client, onRecords });

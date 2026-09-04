@@ -119,6 +119,30 @@ const ARCHETYPES = [
       'sales and marketing',
     ],
   },
+  {
+    id: 'contract_fractional',
+    titleKeywords: [
+      'fractional',
+      'interim',
+      'consultant',
+      'contract',
+      'contract to hire',
+      'contract-to-hire',
+      '1099',
+      'c2c',
+    ],
+    responsibilityKeywords: [
+      'fractional',
+      'contract',
+      'interim',
+      '1099',
+      'statement of work',
+      'engagement',
+      'billing rate',
+      'project-based',
+      'project based',
+    ],
+  },
 ];
 
 /**

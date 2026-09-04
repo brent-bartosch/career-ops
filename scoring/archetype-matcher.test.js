@@ -86,3 +86,13 @@ test('matchArchetypes: gtm_engineer via responsibility keywords without exact ti
   });
   assert.ok(matched.includes('gtm_engineer'));
 });
+
+test('matchArchetypes: tags contract_fractional on a fractional title', () => {
+  const matched = matchArchetypes({ title: 'Fractional RevOps Leader', snippet: 'own the revenue infrastructure on a fractional basis' });
+  assert.ok(matched.includes('contract_fractional'));
+});
+
+test('matchArchetypes: tags contract_fractional on an interim/consultant title', () => {
+  const matched = matchArchetypes({ title: 'Interim Head of Revenue', snippet: '' });
+  assert.ok(matched.includes('contract_fractional'));
+});

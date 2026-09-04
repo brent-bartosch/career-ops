@@ -13,6 +13,17 @@
 const TERMINAL = new Set(['fetched', 'failed']);
 
 /**
+ * True when a Bright Data error means the snapshot no longer exists (expired/
+ * deleted → 404/"not found"), versus a transient auth/rate/network failure we
+ * should retry on the next run. Marking "gone" snapshots terminal stops them
+ * being re-polled and re-logged as errors on every future run.
+ */
+function isGone(error) {
+  const m = String(error?.message || error || '');
+  return /404|not found|expired|no such snapshot/i.test(m);
+}
+
+/**
  * Reconcile every non-terminal ledger row.
  * @param {object} args
  * @param {{read: Function, append: Function, update: Function}} args.store
@@ -27,7 +38,11 @@ export async function reconcile({ store, client, onRecords }) {
     try {
       status = await client.getProgress(row.snapshot_id);
     } catch (err) {
-      await store.update(row.snapshot_id, { error: `progress: ${err.message}` });
+      if (isGone(err)) {
+        await store.update(row.snapshot_id, { status: 'failed', error: `progress: ${err.message}` });
+      } else {
+        await store.update(row.snapshot_id, { error: `progress: ${err.message}` });
+      }
       continue;
     }
     if (status === 'failed') {
@@ -43,7 +58,11 @@ export async function reconcile({ store, client, onRecords }) {
       await onRecords(records, row.snapshot_id);
       await store.update(row.snapshot_id, { status: 'fetched', rows_captured: records.length, error: '' });
     } catch (err) {
-      await store.update(row.snapshot_id, { status: 'ready', error: `fetch: ${err.message}` });
+      if (isGone(err)) {
+        await store.update(row.snapshot_id, { status: 'failed', error: `fetch: ${err.message}` });
+      } else {
+        await store.update(row.snapshot_id, { status: 'ready', error: `fetch: ${err.message}` });
+      }
     }
   }
 }

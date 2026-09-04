@@ -1,4 +1,4 @@
-# Career-Ops -- AI Job Search Pipeline
+# SmoothOps -- AI Job Search Pipeline
 
 ## Origin
 
@@ -32,17 +32,17 @@ node update-system.mjs check
 
 Parse the JSON output:
 - `{"status": "update-available", "local": "1.0.0", "remote": "1.1.0", "changelog": "..."}` → tell the user:
-  > "career-ops update available (v{local} → v{remote}). Your data (CV, profile, tracker, reports) will NOT be touched. Want me to update?"
+  > "SmoothOps update available (v{local} → v{remote}). Your data (CV, profile, tracker, reports) will NOT be touched. Want me to update?"
   If yes → run `node update-system.mjs apply`. If no → run `node update-system.mjs dismiss`.
 - `{"status": "up-to-date"}` → say nothing
 - `{"status": "dismissed"}` → say nothing
 - `{"status": "offline"}` → say nothing
 - `{"status": "no-remote-version"}` → say nothing (checker reached GitHub but neither VERSION nor the latest release tag parsed as semver — treat as a silent non-failure, same as offline)
 
-The user can also say "check for updates" or "update career-ops" at any time to force a check.
+The user can also say "check for updates" or "update SmoothOps" at any time to force a check.
 To rollback: `node update-system.mjs rollback`
 
-## What is career-ops
+## What is SmoothOps
 
 AI-powered, CLI-agnostic job search automation: pipeline tracking, offer evaluation, CV generation, portal scanning, batch processing. Runs on any AI coding CLI that follows the [open agent skill standard](https://agentskills.io) (Claude Code, Codex, Gemini, OpenCode, Qwen, Copilot, Kimi).
 
@@ -216,6 +216,33 @@ Default modes are in `modes/` (English). Additional language-specific modes are 
 - `cv.md` in project root is the canonical CV
 - `article-digest.md` has detailed proof points (optional)
 - **NEVER hardcode metrics** -- read them from these files at evaluation time
+
+---
+
+## Linear Integration (SmoothOps)
+
+SmoothOps work is tracked in Linear under the **SmoothOps** team (key `OPS`)
+in the Smoothed workspace. Client teams (`EZO`, `CYA`) stay separate.
+
+**Projects** (under SmoothOps):
+
+| Project | Covers |
+|---------|--------|
+| Go-To-Market | outbound, lead gen, LinkedIn outreach, scrapers |
+| Personal Brand | LinkedIn posts, writing samples, content |
+| Invoicing & Finance | client invoices, template, remit |
+| Platform & Tooling | update-system, CI, modes, dashboard, agent conventions |
+| Admin & Legal | contracts, legal, tax, standing items |
+
+**The convention (do this for any non-trivial chunk of work):**
+
+1. **Start** — file (or claim) a Linear issue for the work before starting.
+2. **Finish** — mark it Done (or move to In Review) and add a one-line comment with what shipped and where.
+3. **Blocked / stale** — if work stalls, label it `blocked`/`on-hold` or move it out of In Progress. Never leave it silently in progress.
+
+The only things that should sit in "In Progress" are things an agent is actively doing. That is what keeps the dashboard honest.
+
+**Interface:** `api-toolkit/services/linear/api.py` is the client (`LINEAR_API_KEY` in `.env`). Team keys and names both resolve to IDs — use `team="OPS"` or `team="SmoothOps"`. To restore context after a shuffle, run `api.list_issues(team="OPS")`, `api.health_check()`, and `api.stale_issues()`.
 
 ---
 

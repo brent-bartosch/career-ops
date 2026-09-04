@@ -67,6 +67,30 @@ test('reconcile: skips already-fetched rows', async () => {
   assert.equal(progressCalls, 0);
 });
 
+test('reconcile: marks gone (404/expired) snapshots terminal so they stop erroring', async () => {
+  const store = memStore([{ snapshot_id: 's6', status: 'triggered' }]);
+  const client = {
+    async getProgress() { throw new Error('Bright Data progress failed: 404 — {"error":"not found"}'); },
+    async fetchSnapshot() { throw new Error('should not fetch'); },
+  };
+  let emitted = 0;
+  await reconcile({ store, client, onRecords: async () => { emitted++; } });
+  assert.equal(emitted, 0);
+  assert.equal((await store.read())[0].status, 'failed');
+});
+
+test('reconcile: leaves transient progress errors for retry (non-terminal)', async () => {
+  const store = memStore([{ snapshot_id: 's7', status: 'triggered' }]);
+  const client = {
+    async getProgress() { throw new Error('Bright Data progress failed: 429 — rate limited'); },
+    async fetchSnapshot() { throw new Error('should not fetch'); },
+  };
+  await reconcile({ store, client, onRecords: async () => {} });
+  const row = (await store.read())[0];
+  assert.equal(row.status, 'triggered');
+  assert.match(row.error, /429/);
+});
+
 test('adoptOrphans: appends ledger rows for dataset snapshots missing from the ledger', async () => {
   const store = memStore([{ snapshot_id: 's1', status: 'fetched' }]);
   const client = { async listSnapshots() { return [{ id: 's1', status: 'ready' }, { id: 's2', status: 'ready' }]; } };

@@ -1,0 +1,16 @@
+# Cyara client profile — PLACEHOLDER, engagement not yet started
+client:
+  slug: CYARA
+  legal_name: TBD
+  address: TBD
+  billing_email: TBD
+
+agreement:
+  name: TBD
+  executed: TBD
+  reference: TBD
+  terms: TBD
+
+payment:
+  currency: USD
+  amount_per_invoice: TBD

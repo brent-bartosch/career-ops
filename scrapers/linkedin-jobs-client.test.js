@@ -1,7 +1,7 @@
 // scrapers/linkedin-jobs-client.test.js
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LinkedInJobsClient } from './linkedin-jobs-client.js';
+import { LinkedInJobsClient, isFatalBrightDataError } from './linkedin-jobs-client.js';
 
 function mockFetch(seq) {
   const calls = [];
@@ -9,7 +9,12 @@ function mockFetch(seq) {
   const fn = async (url, opts) => {
     calls.push({ url, opts });
     const r = seq[i++];
-    return { ok: r.status < 300, status: r.status, async json() { return r.body; } };
+    return {
+      ok: r.status < 300,
+      status: r.status,
+      async json() { return r.body; },
+      async text() { return typeof r.body === 'string' ? r.body : JSON.stringify(r.body); },
+    };
   };
   fn.calls = calls;
   return fn;
@@ -60,4 +65,22 @@ test('auth error (401) surfaces clearly', async () => {
   const fetchFn = mockFetch([{ status: 401, body: {} }]);
   const c = new LinkedInJobsClient({ apiKey: 'bad', datasetId: 'gd_x', fetchFn });
   await assert.rejects(() => c.trigger([{}]), /BRIGHT_DATA_API_KEY/);
+});
+
+test('non-JSON error body (e.g. "Customer is not active") surfaces the real reason', async () => {
+  const fetchFn = mockFetch([{ status: 400, body: 'Customer is not active' }]);
+  const c = new LinkedInJobsClient({ apiKey: 'k', datasetId: 'gd_x', fetchFn });
+  await assert.rejects(() => c.trigger([{}]), /Customer is not active/);
+});
+
+test('isFatalBrightDataError: account-inactive and auth errors are fatal', () => {
+  assert.equal(isFatalBrightDataError(new Error('Bright Data trigger failed: 400 — Customer is not active')), true);
+  assert.equal(isFatalBrightDataError(new Error('BRIGHT_DATA_API_KEY rejected (401) at trigger')), true);
+  assert.equal(isFatalBrightDataError(new Error('Account suspended')), true);
+  assert.equal(isFatalBrightDataError(new Error('Subscription expired')), true);
+});
+
+test('isFatalBrightDataError: transient errors are not fatal', () => {
+  assert.equal(isFatalBrightDataError(new Error('Bright Data trigger failed: 429 — rate limited')), false);
+  assert.equal(isFatalBrightDataError(new Error('Bright Data trigger failed: 500 — (no body)')), false);
 });

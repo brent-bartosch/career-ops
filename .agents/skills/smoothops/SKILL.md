@@ -1,5 +1,5 @@
 ---
-name: career-ops
+name: smoothops
 description: AI job search command center -- evaluate offers, generate CVs, scan portals, track applications
 arguments: mode # Claude Code specific
 user-invocable: true
@@ -7,7 +7,7 @@ argument-hint: "[scan | deep | pdf | oferta | ofertas | apply | batch | tracker 
 license: MIT
 ---
 
-# career-ops -- Router
+# smoothops -- Router
 
 ## Mode Routing
 

@@ -150,11 +150,12 @@ async function generatePDF() {
     const pdfBuffer = await page.pdf({
       format: format,
       printBackground: true,
+      scale: 0.95,
       margin: {
-        top: '0.6in',
-        right: '0.6in',
-        bottom: '0.6in',
-        left: '0.6in',
+        top: '0.4in',
+        right: '0.5in',
+        bottom: '0.4in',
+        left: '0.5in',
       },
       preferCSSPageSize: false,
     });

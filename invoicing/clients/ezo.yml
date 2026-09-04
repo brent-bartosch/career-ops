@@ -1,0 +1,26 @@
+# EZO client profile — used by invoice generator
+client:
+  slug: EZO
+  legal_name: "EZ Web Enterprises, Inc. d/b/a EZO"
+  address: |
+    701 S Carson St, STE 200
+    Carson City, NV 89701
+  billing_email: finance@ezo.io
+
+agreement:
+  name: Consultancy Agreement
+  executed: 2026-07-15
+  docusign_envelope: EF568C38-3DDF-8AAA-8122-DDF4F6E1AFAF
+  sponsor: Shawn Herring
+  countersigned_by: Courtney Hamm
+  reference: "Exhibit A §6"
+  terms: "Net 7 from acceptance"
+
+payment:
+  currency: USD
+  # Original engagement was fixed fee $15,000 in 3 tranches (invoices 0001-0003).
+  # Weeks 4+ are an extension — confirm amount per invoice with Brent.
+  amount_per_invoice: TBD
+
+acceptance:
+  role: CMO   # deliverables accepted in writing by CMO per past invoices

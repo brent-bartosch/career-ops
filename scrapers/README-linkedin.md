@@ -1,6 +1,6 @@
 # LinkedIn GTM Daily Scan
 
-Daily Bright Data scan of new LinkedIn **GTM Engineering** / **Head of GTM** postings
+Daily Bright Data scan of new LinkedIn **GTM Engineering** / **Head of GTM** / **Contract-Fractional** postings
 (LA hybrid/onsite, Remote-US, contract) → scored → archetype-gated → appended to a
 visual Google Sheet. Reliability core: async snapshots + a `_runs` ledger that makes
 lost output impossible. Deployed as a Railway cron.
@@ -25,7 +25,7 @@ node scrapers/linkedin-scan.js --no-classify   # scrape + append, skip the LLM c
   in `scoring/archetype-matcher.js` still tags **all** archetypes on returned postings.
 - `archetypes.*.keywords` — the LinkedIn search keywords per archetype.
 
-Default matrix ≈ 16 keywords × 5 locations = 80 inputs ⇒ ~16 Bright Data jobs/day.
+Default matrix ≈ 35 keywords × 5 locations = 175 inputs ⇒ ~35 Bright Data jobs/day.
 
 ## Environment
 
